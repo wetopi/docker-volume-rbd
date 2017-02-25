@@ -1,0 +1,7 @@
+{
+    "dependencies": {
+        "github.com/docker/go-connections": {
+            "version": "v0.2.0"
+        }
+    }
+}

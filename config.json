@@ -1,0 +1,144 @@
+{
+    "description": "RBD plugin for Docker",
+    "documentation": "https://docs.docker.com/engine/extend/",
+    "entrypoint": [
+        "/docker-volume-rbd"
+    ],
+    "env": [
+        {
+            "name": "DEBUG",
+            "settable": [
+                "value"
+            ],
+            "value": "0"
+        },
+        {
+            "name": "RBD_CONF_CLUSTER",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_KEYRING_USER",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_KEYRING_KEY",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_KEYRING_CAPS_MDS",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_KEYRING_CAPS_MON",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_KEYRING_CAPS_OSD",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_GLOBAL_FSID",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_GLOBAL_MON_INITIAL_MEMBERS",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_GLOBAL_MON_HOST",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_GLOBAL_AUTH_CLUSTER_REQUIRED",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_GLOBAL_AUTH_SERVICE_REQUIRED",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_GLOBAL_AUTH_CLIENT_REQUIRED",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_GLOBAL_OSD_POOL_DEFAULT_SIZE",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_GLOBAL_PUBLIC_NETWORK",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_CLIENT_RBD_DEFAULT_FEATURES",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_MDS_SESSION_TIMEOUT",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "RBD_CONF_MDS_SESSION_AUTOCLOSE",
+            "settable": [
+                "value"
+            ]
+        }
+    ],
+    "interface": {
+        "socket": "rbd.sock",
+        "types": [
+            "docker.volumedriver/1.0"
+        ]
+    },
+    "linux": {
+        "capabilities": [
+            "CAP_SYS_ADMIN"
+        ],
+        "devices": null
+    },
+    "mounts": [
+        {
+            "destination": "/mnt/state",
+            "options": [
+                "rbind"
+            ],
+            "source": "/var/lib/docker/plugins/",
+            "type": "bind"
+        }
+    ],
+    "network": {
+        "type": "host"
+    },
+    "propagatedmount": "/mnt/volumes"
+}

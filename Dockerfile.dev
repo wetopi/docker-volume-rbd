@@ -1,0 +1,17 @@
+FROM golang:1.8
+
+MAINTAINER Joan Vega <joan@wetopi.com>
+
+RUN apt-get update \
+    && apt-get install -y -q \
+       gcc libc-dev \
+       librados-dev \
+       librbd-dev
+
+COPY . /go/src/github.com/wetopi/docker-volume-rbd
+WORKDIR /go/src/github.com/wetopi/docker-volume-rbd
+
+RUN set -ex \
+    && go install
+
+CMD ["/go/bin/docker-volume-rbd"]
