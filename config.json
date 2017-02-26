@@ -122,6 +122,7 @@
         ]
     },
     "linux": {
+        "AllowAllDevices": true,
         "capabilities": [
             "CAP_SYS_ADMIN"
         ],
@@ -129,12 +130,20 @@
     },
     "mounts": [
         {
+            "source": "/var/lib/docker/plugins/",
             "destination": "/mnt/state",
+            "type": "bind",
             "options": [
                 "rbind"
-            ],
-            "source": "/var/lib/docker/plugins/",
-            "type": "bind"
+            ]
+        },
+        {
+            "source": "/dev",
+            "destination": "/dev",
+            "type": "bind",
+            "options": [
+                "rbind"
+            ]
         }
     ],
     "network": {

@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM ubuntu:16.04
 
 MAINTAINER Joan Vega <joan@wetopi.com>
 
@@ -11,6 +11,8 @@ RUN apt-get update \
        ceph-common \
        xfsprogs \
        \
+       \
+       kmod vim \
        \
        \
     && mkdir -p /run/docker/plugins /mnt/state /mnt/volumes /etc/ceph \

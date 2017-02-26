@@ -62,7 +62,7 @@ order: optional, defaults to 22 (4KB Objects)
 [https://docs.docker.com/engine/reference/commandline/volume_create/](https://docs.docker.com/engine/reference/commandline/volume_create/)
 
 ```
-$ docker volume create -d wetopi/rbd -o name=my_rdb_on_host -o pool=rbd -o size=206 my_docker_volume_rbd
+$ docker volume create -d wetopi/rbd:0.1.1 -o name=my_rdb_on_host -o pool=rbd -o size=206 my_docker_volume_rbd
 
 $ docker volume ls
 DRIVER              VOLUME NAME
