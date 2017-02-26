@@ -42,7 +42,7 @@ func (d *rbdDriver) configure() error {
 //
 func (d *rbdDriver) loadEnvironmentRbdConfigVars() {
 	for _, e := range os.Environ() {
-		pair := strings.Split(e, "=")
+		pair := strings.SplitN(e, "=", 2)
 
 		if (strings.HasPrefix(pair[0], "RBD_CONF_")) {
 			configPair := strings.Split(pair[0], "RBD_CONF_")

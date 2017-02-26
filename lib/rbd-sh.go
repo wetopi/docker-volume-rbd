@@ -60,7 +60,7 @@ func (d *rbdDriver) unmountDevice(device string) error {
 
 // rbdsh will call rbd with the given command arguments, also adding config, user and pool flags
 func (d *rbdDriver) rbdsh(pool, command string, args ...string) (string, error) {
-	args = append([]string{"--id", d.conf["keyring_user"], command}, args...)
+	args = append([]string{"--name", d.conf["keyring_user"], command}, args...)
 	if pool != "" {
 		args = append([]string{"--pool", pool}, args...)
 	}
