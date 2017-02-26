@@ -152,6 +152,14 @@
             "options": [
                 "rbind"
             ]
+        },
+        {
+            "source": "/sys",
+            "destination": "/sys",
+            "type": "bind",
+            "options": [
+                "rbind"
+            ]
         }
     ],
     "network": {
