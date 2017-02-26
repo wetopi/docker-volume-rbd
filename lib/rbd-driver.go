@@ -61,7 +61,7 @@ func NewDriver() (*rbdDriver, error) {
 
 	driver := &rbdDriver{
 		pool: "rbd",
-		root: filepath.Join("mnt", "volumes"),
+		root: filepath.Join(root, "volumes"),
 		conf: make(map[string]string),
 		statePath: filepath.Join(root, "state", "rbd-state.json"),
 		volumes: map[string]*Volume{},

@@ -62,7 +62,7 @@ order: optional, defaults to 22 (4KB Objects)
 [https://docs.docker.com/engine/reference/commandline/volume_create/](https://docs.docker.com/engine/reference/commandline/volume_create/)
 
 ```
-$ docker volume create -d wetopi/rbd:0.1.1 -o name=my_rdb_on_host -o pool=rbd -o size=206 my_docker_volume_rbd
+$ docker volume create -d wetopi/rbd:0.1.1 -o name=my_rbd_volume -o pool=rbd -o size=206 my_rbd_volume
 
 $ docker volume ls
 DRIVER              VOLUME NAME
@@ -75,7 +75,7 @@ wetopi/rbd          my_rbd_volume
 3 - Use the volume
 
 ```
-$ docker run -it -v my_rbd_volume:<path> busybox ls <path>
+$ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.1 busybox sh
 ```
 
 4 - Troubleshooting
