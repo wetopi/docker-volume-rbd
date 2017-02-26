@@ -214,7 +214,7 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 		// map
 		v.device, err = d.mapImage(v.pool, v.name)
 		if err != nil {
-			return responseError(fmt.Sprintf(" unable to map rbd image(%s) to kernel device: %s", v.name, err))
+			return responseError(fmt.Sprintf("unable to map rbd image(%s) to kernel device: %s", v.name, err))
 		}
 
 

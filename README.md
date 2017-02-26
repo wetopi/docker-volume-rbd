@@ -10,7 +10,7 @@ This plugins is managed using Docker Engine plugin system.
 
 ## Usage
 
-0 - Configure options
+1 - Configure options
 
 Key value vars to pass when installing this plugin driver:
 
@@ -36,9 +36,9 @@ RBD_CONF_GLOBAL_PUBLIC_NETWORK="192.168.100.0/23"
 RBD_CONF_CLIENT_RBD_DEFAULT_FEATURES=1
 RBD_CONF_MDS_SESSION_TIMEOUT=120
 RBD_CONF_MDS_SESSION_AUTOCLOSE=600
+```
 
-
-1 - Install the plugin
+2 - Install the plugin
 
 ```
 $ docker plugin install wetopi/rbd \
