@@ -34,7 +34,6 @@ type Volume struct {
 	Order       int    // Specifies the object size expressed as a number of bits. The default is 22 (4KB).
 	Mountpoint  string
 	Device      string
-	Connections int
 }
 
 var (
@@ -50,10 +49,8 @@ func NewDriver() (*rbdDriver, error) {
 
 	logrus.WithField("method", "NewDriver").Debug()
 
-	root := "/mnt"
-
 	driver := &rbdDriver{
-		root: filepath.Join(root, "volumes"),
+		root: filepath.Join("/mnt", "volumes"),
 		conf: make(map[string]string),
 	}
 
@@ -68,7 +65,7 @@ func NewDriver() (*rbdDriver, error) {
 
 
 // mountPointOnHost returns the expected path on host
-func (d *rbdDriver) mountPointOnHost(pool, name string) string {
+func (d *rbdDriver) mountPointOnHost(pool string, name string) string {
 	return filepath.Join(d.root, pool, name)
 }
 
@@ -156,7 +153,7 @@ func (d *rbdDriver) rbdImageExists(pool, findName string) (bool, error) {
 
 // createRBDImage will create a new Ceph block device and make a filesystem on it
 func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, order int, fstype string) error {
-	log.Printf("INFO: Attempting to create new RBD Image: (%s/%s, %s, %s)", pool, imageName, size, fstype)
+	log.Printf("INFO: Attempting to create new RBD Image pool=%s name=%s size=%dMB fstype=%s)", pool, imageName, size, fstype)
 
 	// check that fs is valid type (needs mkfs.fstype in PATH)
 	mkfs, err := exec.LookPath("mkfs." + fstype)
@@ -165,16 +162,10 @@ func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, o
 		return errors.New(msg)
 	}
 
-	/*
-	_, err = d.rbdsh(
-		pool, "create",
-		"--image-format", strconv.Itoa(2),
-		"--size", strconv.Itoa(size),
-		imageName,
-	)
-        */
 
-	_, err = rbd.Create(d.ioctx, imageName, size, order)
+	// create the image
+	sizeInBytes := size*1024*1024
+	_, err = rbd.Create(d.ioctx, imageName, sizeInBytes, order)
 	if err != nil {
 		return err
 	}
@@ -183,13 +174,15 @@ func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, o
 	// map to kernel device
 	device, err := d.mapImage(pool, imageName)
 	if err != nil {
+		defer d.removeRBDImage(device)
 		return err
 	}
 
-	// make the filesystem - give it some time
+	// make the filesystem (give it some time)
 	_, err = shWithTimeout(5 * time.Minute, mkfs, device)
 	if err != nil {
-		defer d.unmapImageDevice(device)
+		d.unmapImageDevice(device)
+		defer d.removeRBDImage(device)
 		return err
 	}
 

@@ -93,8 +93,13 @@ fff19fa9a622        wetopi/rbd:0.1.1    RBD plugin for Docker     true
 
 ### Exec an interactiva bash in plugins container:
 
+find the full id:
+
 ```
-docker-runc exec -t fff19fa9a622 bash
+docker-runc list | grep fff19fa9a622
+
+```
+docker-runc exec -t fff19fa9a622885f5bcc30c0199046761825b037b25523540647b12ccf84403be bash
 ```
 
 If this container is not running or restarting, then check your docker engine log i.e. `tail -f /var/log/upstart/docker` 
@@ -104,7 +109,7 @@ or its equivalent `journalctl -f -u docker.service`
 ### Check Consul Key Value store:
 
 ```bash
-curl 
+curl -s http://localhost:8500/v1/kv/?keys=
 ```
 
 

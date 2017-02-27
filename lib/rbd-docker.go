@@ -46,8 +46,10 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 		Name: "",
 		Fstype: "ext4",
 		Pool: "",
-		Size: 512, // 512MB
-		Order: 22, // 4KB Objects
+		Size: 512, 	// 512MB
+		Order: 22, 	// 4KB Objects
+		Mountpoint: "", // Unmounted when ""
+		Device: "",
 	}
 
 	for key, val := range r.Options {
@@ -75,23 +77,15 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 		}
 	}
 
+
 	if v.Name == "" {
 		return responseError("'name' option required")
 	}
 
-	// TODO: dockerd performs a pregvious get in order to check if already exists
-	_, previousVolume := d.getVolume(v.Name)
-	if previousVolume.Name != "" {
-		return responseError(fmt.Sprintf("unable to create, this volume (%s) already exists", previousVolume.Name))
-	}
 
 	if v.Pool == "" {
 		return responseError("'pool' option required")
 	}
-
-
-	// set mountpoint
-	v.Mountpoint = d.mountPointOnHost(v.Pool, v.Name)
 
 
 	// connect to ceph
@@ -108,7 +102,6 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 	}
 
 	if !exists {
-
 		// try to create it
 		err = d.createRBDImage(v.Pool, v.Name, v.Size, v.Order, v.Fstype)
 		if err != nil {
@@ -124,6 +117,7 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 	return volume.Response{}
 }
 
+
 func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 	logrus.WithField("api", "Remove").Debugf("%#v", r)
 
@@ -132,17 +126,16 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	if v.Connections != 0 {
+	if v.Mountpoint != "" {
 		return responseError(fmt.Sprintf("volume %s is currently used by a container", r.Name))
 	}
-
 
 	// connect to Ceph and check ceph rbd api for it
 	err = d.connect(v.Pool)
@@ -167,7 +160,7 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 
 	err = d.deleteVolume(v.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to delete Volume(%s) state: %s", v.Name, err))
+		return responseError(fmt.Sprintf("unable to deleteVolume(%s) state: %s", v.Name, err))
 	}
 
 	return volume.Response{}
@@ -181,7 +174,7 @@ func (d *rbdDriver) Path(r volume.Request) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
@@ -218,14 +211,17 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	if v.Connections == 0 {
+	if v.Mountpoint == "" {
+
+		// set mountpoint
+		v.Mountpoint = d.mountPointOnHost(v.Pool, v.Name)
 
 		// map and mount the RBD image
 		// map
@@ -251,11 +247,10 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 		}
 	}
 
-	v.Connections++
 
 	d.setVolume(v)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to save Volume(%s) state: %s", v.Name, err))
+		return responseError(fmt.Sprintf("unable to setVolume(%s) state: %s", v.Name, err))
 	}
 
 	return volume.Response{Mountpoint: v.Mountpoint}
@@ -284,16 +279,15 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	v.Connections--
 
-	if v.Connections <= 0 {
+	if v.Mountpoint != "" {
 
 		// unmount
 		err = d.unmountDevice(v.Device)
@@ -308,12 +302,12 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 			return responseError(err.Error())
 		}
 
-		v.Connections = 0
+		v.Mountpoint = ""
 	}
 
 	d.setVolume(v)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to save Volume(%s) state: %s", v.Name, err))
+		return responseError(fmt.Sprintf("unable to setVolume(%s) state: %s", v.Name, err))
 	}
 
 	return volume.Response{}
@@ -341,7 +335,7 @@ func (d *rbdDriver) Get(r volume.Request) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
