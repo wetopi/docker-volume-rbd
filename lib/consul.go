@@ -4,6 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/hashicorp/consul/api"
 	"encoding/json"
+	"os"
 )
 
 const KEY_PREFIX = "docker.volume.rbd."
@@ -104,7 +105,12 @@ func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
 func getConnection() (error, *api.KV) {
 
 	config := api.DefaultConfig()
-	config.Address = "localhost:8500"
+
+	config.Address = os.Getenv("CONSUL_ADDRESS")
+
+	if (config.Address == "") {
+		config.Address = "localhost:8500"
+	}
 
 	client, err := api.NewClient(config)
 	if err != nil {

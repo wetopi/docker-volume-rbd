@@ -13,6 +13,12 @@
             "value": "0"
         },
         {
+            "name": "CONSUL_ADDRESS",
+            "settable": [
+                "value"
+            ]
+        },
+        {
             "name": "RBD_CONF_CLUSTER",
             "settable": [
                 "value"

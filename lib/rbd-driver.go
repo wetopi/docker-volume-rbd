@@ -3,10 +3,10 @@ package dockerVolumeRbd
 import (
 	"github.com/Sirupsen/logrus"
 	"github.com/ceph/go-ceph/rados"
+	"github.com/ceph/go-ceph/rbd"
 	"sync"
 	"path/filepath"
 	"fmt"
-	"github.com/ceph/go-ceph/rbd"
 	"os/exec"
 	"errors"
 	"time"
