@@ -65,8 +65,8 @@ func NewDriver() (*rbdDriver, error) {
 
 
 // mountPointOnHost returns the expected path on host
-func (d *rbdDriver) mountPointOnHost(pool string, name string) string {
-	return filepath.Join(d.root, pool, name)
+func (d *rbdDriver) getTheMountPointPath(name string) string {
+	return filepath.Join(d.root, name)
 }
 
 // connect builds up the ceph conn and default pool

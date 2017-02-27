@@ -217,10 +217,10 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 	if v.Mountpoint == "" {
 
 		// set mountpoint
-		v.Mountpoint = d.mountPointOnHost(v.Pool, v.Name)
+		v.Mountpoint = d.getTheMountPointPath(v.Name)
 
-		// map and mount the RBD image
-		// map
+
+		// map the RBD image
 		v.Device, err = d.mapImage(v.Pool, v.Name)
 		if err != nil {
 			return responseError(fmt.Sprintf("unable to map rbd image(%s) to kernel device: %s", v.Name, err))
@@ -230,7 +230,6 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 		// check for mountdir - create if necessary
 		err = os.MkdirAll(v.Mountpoint, os.ModeDir | os.FileMode(int(0775)))
 		if err != nil {
-			defer d.unmapImageDevice(v.Device)
 			return responseError(fmt.Sprintf("unable to make mountpoint(%s): %s", v.Mountpoint, err))
 		}
 
@@ -238,7 +237,6 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 		// mount
 		err = d.mountDevice(v.Fstype, v.Device, v.Mountpoint)
 		if err != nil {
-			defer d.unmapImageDevice(v.Device)
 			return responseError(fmt.Sprintf("unable to mount device(%s) to directory(%s): %s", v.Device, v.Mountpoint, err))
 		}
 	}
