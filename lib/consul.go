@@ -64,11 +64,13 @@ func (d *rbdDriver) getVolume(name string) (error, *Volume) {
 
 	v := Volume{}
 
-	logrus.WithField("consul.go", "getVolume").Debugf("pair: %s=%s ", pair.Key, pair.Value)
+	if (pair) {
+		logrus.WithField("consul.go", "getVolume").Debugf("pair: %s=%s ", pair.Key, pair.Value)
 
-	if err := json.Unmarshal(pair.Value, &v); err != nil {
-		logrus.WithField("consul", "getVolume").Error(err)
-		return err, nil
+		if err := json.Unmarshal(pair.Value, &v); err != nil {
+			logrus.WithField("consul", "getVolume").Error(err)
+			return err, nil
+		}
 	}
 
 	return nil, &v
