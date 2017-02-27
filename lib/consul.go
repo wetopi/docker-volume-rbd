@@ -7,7 +7,8 @@ import (
 	"os"
 )
 
-const KEY_PREFIX = "docker/volume/rbd/	"
+const KEY_PREFIX = "docker/volume/rbd/"
+const DEFAULT_CONSUL_ADDRESS = "localhost:8500"
 
 func (d *rbdDriver) setVolume(v *Volume) error {
 
@@ -113,7 +114,7 @@ func getConnection() (error, *api.KV) {
 	config.Address = os.Getenv("CONSUL_ADDRESS")
 
 	if (config.Address == "") {
-		config.Address = "localhost:8500"
+		config.Address = DEFAULT_CONSUL_ADDRESS
 	}
 
 	client, err := api.NewClient(config)

@@ -79,7 +79,8 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 		return responseError("'name' option required")
 	}
 
-	err, previousVolume := d.getVolume(v.Name)
+	// TODO: dockerd performs a pregvious get in order to check if already exists
+	_, previousVolume := d.getVolume(v.Name)
 	if previousVolume.Name != "" {
 		return responseError(fmt.Sprintf("unable to create, this volume (%s) already exists", previousVolume.Name))
 	}
@@ -94,7 +95,7 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 
 
 	// connect to ceph
-	err = d.connect(v.Pool)
+	err := d.connect(v.Pool)
 	if err != nil {
 		return responseError(fmt.Sprintf("unable to connect to ceph and access pool: %s", err))
 
@@ -131,6 +132,10 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
+		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+	}
+
+	if v.Name == "" {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
@@ -176,6 +181,10 @@ func (d *rbdDriver) Path(r volume.Request) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
+		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+	}
+
+	if v.Name == "" {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
@@ -209,6 +218,10 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
+		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+	}
+
+	if v.Name == "" {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
@@ -271,6 +284,10 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
+		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+	}
+
+	if v.Name == "" {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
@@ -324,6 +341,10 @@ func (d *rbdDriver) Get(r volume.Request) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
+		return responseError(fmt.Sprintf("unable to get volume %s state: %s", r.Name, err))
+	}
+
+	if v.Name == "" {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 

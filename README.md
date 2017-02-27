@@ -17,6 +17,8 @@ Key value vars to pass when installing this plugin driver:
 ```
 DEBUG=1
 
+CONSUL_ADDRESS=localhost:8500
+
 RBD_CONF_CLUSTER=ceph
 
 RBD_CONF_KEYRING_USER=client.admin
