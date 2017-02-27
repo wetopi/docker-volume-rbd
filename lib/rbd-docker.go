@@ -133,10 +133,6 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	if v.Mountpoint != "" {
-		return responseError(fmt.Sprintf("volume %s is currently used by a container", r.Name))
-	}
-
 	// connect to Ceph and check ceph rbd api for it
 	err = d.connect(v.Pool)
 	if err != nil {
