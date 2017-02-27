@@ -10,7 +10,7 @@ This plugins is managed using Docker Engine plugin system.
 
 ## Usage
 
-1 - Configure options
+### 1 - Configure options
 
 Key value vars to pass when installing this plugin driver:
 
@@ -38,7 +38,7 @@ RBD_CONF_MDS_SESSION_TIMEOUT=120
 RBD_CONF_MDS_SESSION_AUTOCLOSE=600
 ```
 
-2 - Install the plugin
+### 2 - Install the plugin
 
 ```
 $ docker plugin install wetopi/rbd \
@@ -48,7 +48,7 @@ $ docker plugin install wetopi/rbd \
   ...
 ```
 
-2 - Create a volume
+### 3 - Create a volume
 
 Available options:
 
@@ -72,15 +72,15 @@ local               2d1f2a8fac147b7e7a6b95ca227eba2ff859325210c7280ccb73fd5beda6
 wetopi/rbd          my_rbd_volume
 ```
 
-3 - Use the volume
+### 4 - Use the volume
 
 ```
 $ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.1 busybox sh
 ```
 
-4 - Troubleshooting
+## Troubleshooting
 
-Check your plugin is enabled:
+### Check your plugin is enabled:
 
 ```sh
 $ docker plugin ls
@@ -89,13 +89,22 @@ ID                  NAME                DESCRIPTION               ENABLED
 fff19fa9a622        wetopi/rbd:0.1.1    RBD plugin for Docker     true
 ```
 
-Lets exec an interactiva bash in this container:
+### Exec an interactiva bash in plugins container:
 
 ```
 docker-runc exec -t fff19fa9a622 bash
 ```
 
-If this container is not running or restarting, then check your docker engine log i.e. `/var/log/upstart/docker`
+If this container is not running or restarting, then check your docker engine log i.e. `tail -f /var/log/upstart/docker` 
+or its equivalent `journalctl -f -u docker.service`
+
+
+### Check Consul Key Value store:
+
+```bash
+curl 
+```
+
 
 
 ## THANKS
