@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-const KEY_PREFIX = "docker.volume.rbd."
+const KEY_PREFIX = "docker/volume/rbd/	"
 
 func (d *rbdDriver) setVolume(v *Volume) error {
 
@@ -64,7 +64,7 @@ func (d *rbdDriver) getVolume(name string) (error, *Volume) {
 
 	v := Volume{}
 
-	logrus.WithField("consul.go", "getVolume").Debugf("pair: %#v", pair)
+	logrus.WithField("consul.go", "getVolume").Debugf("pair: %s=%s ", pair.Key, pair.Value)
 
 	if err := json.Unmarshal(pair.Value, &v); err != nil {
 		logrus.WithField("consul", "getVolume").Error(err)
