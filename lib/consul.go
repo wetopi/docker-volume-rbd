@@ -62,9 +62,9 @@ func (d *rbdDriver) getVolume(name string) (error, *Volume) {
 		return err, nil
 	}
 
-	v := Volume{}
+	v := Volume{""}
 
-	if (pair) {
+	if (pair != nil) {
 		logrus.WithField("consul.go", "getVolume").Debugf("pair: %s=%s ", pair.Key, pair.Value)
 
 		if err := json.Unmarshal(pair.Value, &v); err != nil {
