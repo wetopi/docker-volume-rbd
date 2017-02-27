@@ -43,65 +43,65 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 	defer d.Unlock()
 
 	v := &Volume{
-		name: "",
-		fstype: "ext4",
-		pool: "",
-		size: 512, // 512MB
-		order: 22, // 4KB Objects
+		Name: "",
+		Fstype: "ext4",
+		Pool: "",
+		Size: 512, // 512MB
+		Order: 22, // 4KB Objects
 	}
 
 	for key, val := range r.Options {
 		switch key {
 		case "name":
-			v.name = val
+			v.Name = val
 		case "pool":
-			v.pool = val
+			v.Pool = val
 		case "size":
 			var size, err = strconv.ParseUint(val, 10, 64)
 			if err != nil {
 				return responseError(fmt.Sprintf("unable to parse size int: %s", err))
 			}
-			v.size = size
+			v.Size = size
 		case "order":
 			var order, err = strconv.Atoi(val)
 			if err != nil {
 				return responseError(fmt.Sprintf("unable to parse order int: %s", err))
 			}
-			v.order = order
+			v.Order = order
 		case "fstype":
-			v.fstype = val
+			v.Fstype = val
 		default:
 			return responseError(fmt.Sprintf("unknown option %q", val))
 		}
 	}
 
-	if v.name == "" {
+	if v.Name == "" {
 		return responseError("'name' option required")
 	}
 
-	// do we already know about this volume? return early
-	if _, found := d.volumes[v.name]; found {
-		return responseError("volume is already in known mounts: " + v.name)
+	err, previousVolume := d.getVolume(v.Name)
+	if previousVolume.Name != "" {
+		return responseError(fmt.Sprintf("unable to create, this volume (%s) already exists", previousVolume.Name))
 	}
 
-	if v.pool == "" {
+	if v.Pool == "" {
 		return responseError("'pool' option required")
 	}
 
 
 	// set mountpoint
-	v.mountpoint = d.mountPointOnHost(v.pool, v.name)
+	v.Mountpoint = d.mountPointOnHost(v.Pool, v.Name)
 
 
 	// connect to ceph
-	err := d.connect(v.pool)
+	err = d.connect(v.Pool)
 	if err != nil {
 		return responseError(fmt.Sprintf("unable to connect to ceph and access pool: %s", err))
 
 	}
 	defer d.shutdown()
 
-	exists, err := d.rbdImageExists(v.pool, v.name)
+	exists, err := d.rbdImageExists(v.Pool, v.Name)
 	if err != nil {
 		return responseError(fmt.Sprintf("unable to check for rbd image: %s", err))
 	}
@@ -109,15 +109,16 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 	if !exists {
 
 		// try to create it
-		err = d.createRBDImage(v.pool, v.name, v.size, v.order, v.fstype)
+		err = d.createRBDImage(v.Pool, v.Name, v.Size, v.Order, v.Fstype)
 		if err != nil {
-			return responseError(fmt.Sprintf("unable to create Ceph RBD Image(%s): %s", v.name, err))
+			return responseError(fmt.Sprintf("unable to create Ceph RBD Image(%s): %s", v.Name, err))
 		}
 	}
 
-	d.volumes[v.name] = v
-
-	d.saveState()
+	err = d.setVolume(v)
+	if err != nil {
+		return responseError(fmt.Sprintf("unable to save Volume(%s) state: %s", v.Name, err))
+	}
 
 	return volume.Response{}
 }
@@ -128,39 +129,42 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 	d.Lock()
 	defer d.Unlock()
 
-	v, ok := d.volumes[r.Name]
-	if !ok {
+	err, v := d.getVolume(r.Name)
+	if err != nil {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	if v.connections != 0 {
+	if v.Connections != 0 {
 		return responseError(fmt.Sprintf("volume %s is currently used by a container", r.Name))
 	}
 
 
 	// connect to Ceph and check ceph rbd api for it
-	err := d.connect(v.pool)
+	err = d.connect(v.Pool)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to connect to ceph and access pool: %s", err))
+		return responseError(fmt.Sprintf("unable to connect to ceph and access Pool: %s", err))
 	}
 	defer d.shutdown()
 
-	exists, err := d.rbdImageExists(v.pool, v.name)
+	exists, err := d.rbdImageExists(v.Pool, v.Name)
 	if err != nil {
 		return responseError(fmt.Sprintf("unable to check for rbd image: %s", err))
 	}
 
 	if !exists {
-		return responseError(fmt.Sprintf("rbd image not found: %s", v.name))
+		return responseError(fmt.Sprintf("rbd image not found: %s", v.Name))
 	}
 
-	err = d.removeRBDImage(v.name)
+	err = d.removeRBDImage(v.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to remove rbd image(%s): %s", v.name, err))
+		return responseError(fmt.Sprintf("unable to remove rbd image(%s): %s", v.Name, err))
 	}
 
-	delete(d.volumes, r.Name)
-	d.saveState()
+	err = d.deleteVolume(v.Name)
+	if err != nil {
+		return responseError(fmt.Sprintf("unable to delete Volume(%s) state: %s", v.Name, err))
+	}
+
 	return volume.Response{}
 }
 
@@ -170,12 +174,12 @@ func (d *rbdDriver) Path(r volume.Request) volume.Response {
 	d.RLock()
 	defer d.RUnlock()
 
-	v, ok := d.volumes[r.Name]
-	if !ok {
+	err, v := d.getVolume(r.Name)
+	if err != nil {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	return volume.Response{Mountpoint: v.mountpoint}
+	return volume.Response{Mountpoint: v.Mountpoint}
 }
 
 
@@ -203,48 +207,50 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 	d.Lock()
 	defer d.Unlock()
 
-	v, ok := d.volumes[r.Name]
-	if !ok {
+	err, v := d.getVolume(r.Name)
+	if err != nil {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	if v.connections == 0 {
+	if v.Connections == 0 {
 
 		// map and mount the RBD image
 		// map
-		v.device, err = d.mapImage(v.pool, v.name)
+		v.Device, err = d.mapImage(v.Pool, v.Name)
 		if err != nil {
-			return responseError(fmt.Sprintf("unable to map rbd image(%s) to kernel device: %s", v.name, err))
+			return responseError(fmt.Sprintf("unable to map rbd image(%s) to kernel device: %s", v.Name, err))
 		}
 
 
 		// check for mountdir - create if necessary
-		err = os.MkdirAll(v.mountpoint, os.ModeDir | os.FileMode(int(0775)))
+		err = os.MkdirAll(v.Mountpoint, os.ModeDir | os.FileMode(int(0775)))
 		if err != nil {
-			defer d.unmapImageDevice(v.device)
-			return responseError(fmt.Sprintf("unable to make mountpoint(%s): %s", v.mountpoint, err))
+			defer d.unmapImageDevice(v.Device)
+			return responseError(fmt.Sprintf("unable to make mountpoint(%s): %s", v.Mountpoint, err))
 		}
 
 
 		// mount
-		err = d.mountDevice(v.fstype, v.device, v.mountpoint)
+		err = d.mountDevice(v.Fstype, v.Device, v.Mountpoint)
 		if err != nil {
-			defer d.unmapImageDevice(v.device)
-			return responseError(fmt.Sprintf("unable to mount device(%s) to directory(%s): %s", v.device, v.mountpoint, err))
+			defer d.unmapImageDevice(v.Device)
+			return responseError(fmt.Sprintf("unable to mount device(%s) to directory(%s): %s", v.Device, v.Mountpoint, err))
 		}
-
 	}
 
-	v.connections++
+	v.Connections++
 
-	return volume.Response{Mountpoint: v.mountpoint}
+	d.setVolume(v)
+	if err != nil {
+		return responseError(fmt.Sprintf("unable to save Volume(%s) state: %s", v.Name, err))
+	}
+
+	return volume.Response{Mountpoint: v.Mountpoint}
 }
 
 
 // POST /VolumeDriver.Unmount
 //
-// - assuming writes are finished and no other containers using same disk on this host?
-
 // Request:
 //    { "Name": "volume_name" }
 //    Indication that Docker no longer is using the named volume. This is
@@ -263,29 +269,34 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 	d.Lock()
 	defer d.Unlock()
 
-	v, ok := d.volumes[r.Name]
-	if !ok {
+	err, v := d.getVolume(r.Name)
+	if err != nil {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	v.connections--
+	v.Connections--
 
-	if v.connections <= 0 {
+	if v.Connections <= 0 {
 
 		// unmount
-		err = d.unmountDevice(v.device)
+		err = d.unmountDevice(v.Device)
 		if err != nil {
 			return responseError(err.Error())
 		}
 
 
 		// unmap
-		err = d.unmapImageDevice(v.device)
+		err = d.unmapImageDevice(v.Device)
 		if err != nil {
 			return responseError(err.Error())
 		}
 
-		v.connections = 0
+		v.Connections = 0
+	}
+
+	d.setVolume(v)
+	if err != nil {
+		return responseError(fmt.Sprintf("unable to save Volume(%s) state: %s", v.Name, err))
 	}
 
 	return volume.Response{}
@@ -311,12 +322,12 @@ func (d *rbdDriver) Get(r volume.Request) volume.Response {
 	d.Lock()
 	defer d.Unlock()
 
-	v, ok := d.volumes[r.Name]
-	if !ok {
+	err, v := d.getVolume(r.Name)
+	if err != nil {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	return volume.Response{Volume: &volume.Volume{Name: r.Name, Mountpoint: v.mountpoint}}
+	return volume.Response{Volume: &volume.Volume{Name: r.Name, Mountpoint: v.Mountpoint}}
 }
 
 
@@ -340,9 +351,14 @@ func (d *rbdDriver) List(r volume.Request) volume.Response {
 	d.Lock()
 	defer d.Unlock()
 
+	err, volumes := d.getVolumes()
+	if err != nil {
+		return responseError(fmt.Sprintf("getting volumes state give us error: %s", err))
+	}
+
 	var vols []*volume.Volume
-	for name, v := range d.volumes {
-		vols = append(vols, &volume.Volume{Name: name, Mountpoint: v.mountpoint})
+	for _, v := range *volumes {
+		vols = append(vols, &volume.Volume{Name: v.Name, Mountpoint: v.Mountpoint})
 	}
 	return volume.Response{Volumes: vols}
 }

@@ -130,14 +130,6 @@
     },
     "mounts": [
         {
-            "source": "/var/lib/docker/plugins/",
-            "destination": "/mnt/state",
-            "type": "bind",
-            "options": [
-                "rbind"
-            ]
-        },
-        {
             "source": "/lib/modules",
             "destination": "/lib/modules",
             "type": "bind",

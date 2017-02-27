@@ -5,9 +5,6 @@ import (
 	"github.com/ceph/go-ceph/rados"
 	"sync"
 	"path/filepath"
-	"os"
-	"io/ioutil"
-	"encoding/json"
 	"fmt"
 	"github.com/ceph/go-ceph/rbd"
 	"os/exec"
@@ -18,14 +15,10 @@ import (
 )
 
 type rbdDriver struct {
-	pool      string             // ceph pool to use (default: rbd)
 	root      string             // scratch dir for mounts for this plugin
 	conf      map[string]string  // ceph config params
 
 	sync.RWMutex                 // mutex to guard operations that change volume maps or use conn
-
-	statePath string
-	volumes   map[string]*Volume // track locally mounted volumes
 
 	conn      *rados.Conn        // create a connection for each API operation
 	ioctx     *rados.IOContext   // context for requested pool
@@ -34,14 +27,14 @@ type rbdDriver struct {
 
 // Volume is the Docker concept which we map onto a Ceph RBD Image
 type Volume struct {
-	name        string // RBD Image name
-	fstype      string
-	pool        string
-	size        uint64
-	order       int    // Specifies the object size expressed as a number of bits. The default is 22 (4KB).
-	mountpoint  string
-	device      string
-	connections int
+	Name        string // RBD Image name
+	Fstype      string
+	Pool        string
+	Size        uint64
+	Order       int    // Specifies the object size expressed as a number of bits. The default is 22 (4KB).
+	Mountpoint  string
+	Device      string
+	Connections int
 }
 
 var (
@@ -60,30 +53,13 @@ func NewDriver() (*rbdDriver, error) {
 	root := "/mnt"
 
 	driver := &rbdDriver{
-		pool: "rbd",
 		root: filepath.Join(root, "volumes"),
 		conf: make(map[string]string),
-		statePath: filepath.Join(root, "state", "rbd-state.json"),
-		volumes: map[string]*Volume{},
 	}
 
 	err := driver.configure()
 	if err != nil {
 		return nil, err
-	}
-
-	data, err := ioutil.ReadFile(driver.statePath)
-
-	if err != nil {
-		if os.IsNotExist(err) {
-			logrus.WithField("method", "NewDriver").Debugf("driver.statePath(%s): %s", driver.statePath, err)
-		} else {
-			return nil, err
-		}
-	} else {
-		if err := json.Unmarshal(data, &driver.volumes); err != nil {
-			return nil, err
-		}
 	}
 
 	return driver, nil
