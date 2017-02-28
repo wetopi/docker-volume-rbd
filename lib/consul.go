@@ -20,14 +20,14 @@ func (d *rbdDriver) setVolume(v *Volume) error {
 
 	data, err := json.Marshal(v)
 	if err != nil {
-		logrus.WithField("consul", "saveVolume").Error(err)
+		logrus.WithField("consul", "setVolume").Error(err)
 		return err
 	}
 
 	p := &api.KVPair{Key: getKeyFromName(v.Name), Value: data}
-	_, _, err = kv.CAS(p, nil)
+	_, err = kv.Put(p, nil)
 	if err != nil {
-		logrus.WithField("consul", "saveVolume").Error(err)
+		logrus.WithField("consul", "setVolume").Error(err)
 		panic(err)
 	}
 
