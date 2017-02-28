@@ -162,6 +162,7 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 	return volume.Response{}
 }
 
+
 func (d *rbdDriver) Path(r volume.Request) volume.Response {
 	logrus.WithField("method", "path").Debugf("%#v", r)
 
@@ -179,7 +180,6 @@ func (d *rbdDriver) Path(r volume.Request) volume.Response {
 
 	return volume.Response{Mountpoint: v.Mountpoint}
 }
-
 
 
 // Mount will Ceph Map the RBD image to the local kernel and create a mount
@@ -306,6 +306,7 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 
 	return volume.Response{}
 }
+
 
 // Get the volume info.
 //

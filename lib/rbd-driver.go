@@ -171,7 +171,7 @@ func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, o
 	}
 
 
-	// map to kernel device
+	// map to kernel device only to initialize
 	device, err := d.mapImage(pool, imageName)
 	if err != nil {
 		defer d.removeRBDImage(device)
@@ -186,8 +186,13 @@ func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, o
 		return err
 	}
 
+
+	// unmap until a container mounts it
+	defer d.unmapImageDevice(device)
+
 	return nil
 }
+
 
 func (d *rbdDriver) removeRBDImage(name string) error {
 	// build image struct
