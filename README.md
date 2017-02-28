@@ -63,7 +63,7 @@ order: optional, defaults to 22 (4KB Objects)
 [https://docs.docker.com/engine/reference/commandline/volume_create/](https://docs.docker.com/engine/reference/commandline/volume_create/)
 
 ```
-$ docker volume create -d wetopi/rbd:0.1.1 -o pool=rbd -o size=206 my_rbd_volume
+$ docker volume create -d wetopi/rbd:0.1.2 -o pool=rbd -o size=206 my_rbd_volume
 
 $ docker volume ls
 DRIVER              VOLUME NAME
@@ -76,7 +76,7 @@ wetopi/rbd          my_rbd_volume
 ### 4 - Use the volume
 
 ```
-$ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.1 busybox sh
+$ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.2 busybox sh
 ```
 
 ## Troubleshooting
@@ -87,7 +87,7 @@ $ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.1 busybox
 $ docker plugin ls
 
 ID                  NAME                DESCRIPTION               ENABLED
-fff19fa9a622        wetopi/rbd:0.1.1    RBD plugin for Docker     true
+fff19fa9a622        wetopi/rbd:0.1.2    RBD plugin for Docker     true
 ```
 
 ### Exec an interactiva bash in plugins container:
