@@ -1,8 +1,7 @@
 # Docker volume plugin for RBD
 
-Docker Engine managed plugin to manage RBD volumes.
+Docker Engine managed plugin to for RBD volumes.
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/wetopi/docker-volume-rbd)](https://goreportcard.com/report/github.com/wetopi/docker-volume-rbd)
 
 This plugins is managed using Docker Engine plugin system.
 [https://github.com/docker/docker/blob/master/docs/extend/index.md](https://github.com/docker/docker/blob/master/docs/extend/index.md)
@@ -63,7 +62,7 @@ order: optional, defaults to 22 (4KB Objects)
 [https://docs.docker.com/engine/reference/commandline/volume_create/](https://docs.docker.com/engine/reference/commandline/volume_create/)
 
 ```
-$ docker volume create -d wetopi/rbd:0.1.2 -o pool=rbd -o size=206 my_rbd_volume
+$ docker volume create -d wetopi/rbd:0.1.3 -o pool=rbd -o size=206 my_rbd_volume
 
 $ docker volume ls
 DRIVER              VOLUME NAME
@@ -76,8 +75,15 @@ wetopi/rbd          my_rbd_volume
 ### 4 - Use the volume
 
 ```
-$ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.2 busybox sh
+$ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.3 busybox sh
 ```
+
+### 5 - Upgrading the plugin
+
+```
+$ docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.1.3 
+```
+
 
 ## Troubleshooting
 
@@ -87,7 +93,7 @@ $ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.2 busybox
 $ docker plugin ls
 
 ID                  NAME                DESCRIPTION               ENABLED
-fff19fa9a622        wetopi/rbd:0.1.2    RBD plugin for Docker     true
+fff19fa9a622        wetopi/rbd:0.1.3    RBD plugin for Docker     true
 ```
 
 ### Exec an interactiva bash in plugins container:
@@ -118,6 +124,8 @@ curl -s curl http://localhost:8500/v1/kv/docker/volume/rbd/my_rbd_volume?raw
 ## THANKS
 
 https://github.com/docker/go-plugins-helpers
+
+https://github.com/yp-engineering/rbd-docker-plugin
 
 ## LICENSE
 
