@@ -54,7 +54,6 @@ $ docker plugin install wetopi/rbd \
 
 Available options:
 
-name: required
 pool: required
 fstype: optional, defauls to ext4
 size: optional, defaults to 512 (512MB)
@@ -64,7 +63,7 @@ order: optional, defaults to 22 (4KB Objects)
 [https://docs.docker.com/engine/reference/commandline/volume_create/](https://docs.docker.com/engine/reference/commandline/volume_create/)
 
 ```
-$ docker volume create -d wetopi/rbd:0.1.1 -o name=my_rbd_volume -o pool=rbd -o size=206 my_rbd_volume
+$ docker volume create -d wetopi/rbd:0.1.1 -o pool=rbd -o size=206 my_rbd_volume
 
 $ docker volume ls
 DRIVER              VOLUME NAME
@@ -106,10 +105,12 @@ If this container is not running or restarting, then check your docker engine lo
 or its equivalent `journalctl -f -u docker.service`
 
 
-### Check Consul Key Value store:
+### Check Consul Key Value:
+
+Check if state stored in Consul KV is consistent:
 
 ```bash
-curl -s http://localhost:8500/v1/kv/?keys=
+curl -s curl http://localhost:8500/v1/kv/docker/volume/rbd/my_rbd_volume?raw
 ```
 
 

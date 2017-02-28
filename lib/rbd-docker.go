@@ -24,8 +24,8 @@ import (
 //
 // Request:
 //    {
-//      "name": "volume_name",
-//      "size": {}
+//      "Name": "volume_name",
+//      "Options": {}
 //    }
 //
 //    Instruct the plugin that the user wants to create a volume, given a user
@@ -43,19 +43,17 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 	defer d.Unlock()
 
 	v := &Volume{
-		Name: "",
+		Name: r.Name,
 		Fstype: "ext4",
 		Pool: "",
-		Size: 512, 	// 512MB
-		Order: 22, 	// 4KB Objects
+		Size: 512, // 512MB
+		Order: 22, // 4KB Objects
 		Mountpoint: "", // Unmounted when ""
 		Device: "",
 	}
 
 	for key, val := range r.Options {
 		switch key {
-		case "name":
-			v.Name = val
 		case "pool":
 			v.Pool = val
 		case "size":
@@ -75,11 +73,6 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 		default:
 			return responseError(fmt.Sprintf("unknown option %q", val))
 		}
-	}
-
-
-	if v.Name == "" {
-		return responseError("'name' option required")
 	}
 
 
@@ -117,7 +110,6 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 	return volume.Response{}
 }
 
-
 func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 	logrus.WithField("api", "Remove").Debugf("%#v", r)
 
@@ -146,12 +138,13 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 	}
 
 	if !exists {
-		return responseError(fmt.Sprintf("rbd image not found: %s", v.Name))
-	}
+		logrus.WithField("api", "Remove").Warnf("rbd image not found: %s", v.Name)
 
-	err = d.removeRBDImage(v.Name)
-	if err != nil {
-		return responseError(fmt.Sprintf("unable to remove rbd image(%s): %s", v.Name, err))
+	} else {
+		err = d.removeRBDImage(v.Name)
+		if err != nil {
+			return responseError(fmt.Sprintf("unable to remove rbd image(%s): %s", v.Name, err))
+		}
 	}
 
 	err = d.deleteVolume(v.Name)
@@ -161,7 +154,6 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 
 	return volume.Response{}
 }
-
 
 func (d *rbdDriver) Path(r volume.Request) volume.Response {
 	logrus.WithField("method", "path").Debugf("%#v", r)
@@ -241,7 +233,6 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 		}
 	}
 
-
 	d.setVolume(v)
 	if err != nil {
 		return responseError(fmt.Sprintf("unable to setVolume(%s) state: %s", v.Name, err))
@@ -279,7 +270,6 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 	if v.Name == "" {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
-
 
 	if v.Mountpoint != "" {
 

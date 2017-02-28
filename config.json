@@ -1,6 +1,6 @@
 {
     "description": "RBD plugin for Docker",
-    "documentation": "https://docs.docker.com/engine/extend/",
+    "documentation": "https://github.com/wetopi/docker-volume-rbd",
     "entrypoint": [
         "/docker-volume-rbd"
     ],

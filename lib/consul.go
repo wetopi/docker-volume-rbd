@@ -11,6 +11,7 @@ const KEY_PREFIX = "docker/volume/rbd/"
 const DEFAULT_CONSUL_ADDRESS = "localhost:8500"
 
 func (d *rbdDriver) setVolume(v *Volume) error {
+	logrus.WithField("consul", "setVolume").Debugf("%#v", v)
 
 	err, kv := getConnection()
 	if err != nil {
@@ -35,6 +36,7 @@ func (d *rbdDriver) setVolume(v *Volume) error {
 }
 
 func (d *rbdDriver) deleteVolume(name string) (error) {
+	logrus.WithField("consul", "deleteVolume").Debugf("volume name: %s", name)
 
 	err, kv := getConnection()
 	if err != nil {
@@ -51,6 +53,7 @@ func (d *rbdDriver) deleteVolume(name string) (error) {
 }
 
 func (d *rbdDriver) getVolume(name string) (error, *Volume) {
+	logrus.WithField("consul", "getVolume").Debugf("volume name: %s", name)
 
 	err, kv := getConnection()
 	if err != nil {
@@ -78,6 +81,7 @@ func (d *rbdDriver) getVolume(name string) (error, *Volume) {
 }
 
 func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
+	logrus.WithField("consul", "getVolumes").Debug("get list of volumes")
 
 	err, kv := getConnection()
 	if err != nil {
