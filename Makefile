@@ -39,4 +39,4 @@ enable:
 
 push: clean docker rootfs create enable
 	@echo "### push plugin ${PLUGIN_NAME}:${PLUGIN_VERSION}"
-	@docker plugin push ${PLUGIN_NAME}:${PLUGIN_VERSION}
+	@docker plugin push ${PLUGIN_NAME}
