@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"strconv"
 
@@ -23,10 +22,10 @@ func main() {
 
 	rbdDriver, err := dockerVolumeRbd.NewDriver()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	h := volume.NewHandler(rbdDriver)
-	logrus.Infof("listening on %s", socketAddress)
+	logrus.Infof("listening from plugin container to %s", socketAddress)
 	logrus.Error(h.ServeUnix(socketAddress, 0))
 }

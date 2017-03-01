@@ -84,6 +84,8 @@ $ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.3 busybox
 $ docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.1.3 
 ```
 
+IMPORTANT: currently (docker version 1.13.1) tag/version is considered part of plugins name. This produces name inconsistency during the upgrade process. Until it's solved we release upgrades under the latest tag. 
+
 
 ## Troubleshooting
 
@@ -124,7 +126,6 @@ curl -s curl http://localhost:8500/v1/kv/docker/volume/rbd/my_rbd_volume?raw
 ## THANKS
 
 https://github.com/docker/go-plugins-helpers
-
 https://github.com/yp-engineering/rbd-docker-plugin
 
 ## LICENSE

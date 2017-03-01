@@ -110,6 +110,7 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 	return volume.Response{}
 }
 
+
 func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 	logrus.WithField("api", "Remove").Debugf("%#v", r)
 
@@ -154,6 +155,7 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 
 	return volume.Response{}
 }
+
 
 func (d *rbdDriver) Path(r volume.Request) volume.Response {
 	logrus.WithField("method", "path").Debugf("%#v", r)
@@ -206,32 +208,34 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 		return responseError(fmt.Sprintf("volume %s not found", r.Name))
 	}
 
-	if v.Mountpoint == "" {
-
-		// set mountpoint
-		v.Mountpoint = d.getTheMountPointPath(v.Name)
-
-
-		// map the RBD image
-		v.Device, err = d.mapImage(v.Pool, v.Name)
-		if err != nil {
-			return responseError(fmt.Sprintf("unable to map rbd image(%s) to kernel device: %s", v.Name, err))
-		}
-
-
-		// check for mountdir - create if necessary
-		err = os.MkdirAll(v.Mountpoint, os.ModeDir | os.FileMode(int(0775)))
-		if err != nil {
-			return responseError(fmt.Sprintf("unable to make mountpoint(%s): %s", v.Mountpoint, err))
-		}
-
-
-		// mount
-		err = d.mountDevice(v.Fstype, v.Device, v.Mountpoint)
-		if err != nil {
-			return responseError(fmt.Sprintf("unable to mount device(%s) to directory(%s): %s", v.Device, v.Mountpoint, err))
-		}
+	if v.Mountpoint != "" {
+		logrus.WithField("api", "Mount").Warnf("this volume(%s) has a previous registered mountpoint(%s)", v.Name, v.Mountpoint)
 	}
+
+	// set mountpoint
+	v.Mountpoint = d.getTheMountPointPath(v.Name)
+
+
+	// map the RBD image
+	v.Device, err = d.mapImage(v.Pool, v.Name)
+	if err != nil {
+		return responseError(fmt.Sprintf("unable to map rbd image(%s) to kernel device: %s", v.Name, err))
+	}
+
+
+	// check for mountdir - create if necessary
+	err = os.MkdirAll(v.Mountpoint, os.ModeDir | os.FileMode(int(0775)))
+	if err != nil {
+		return responseError(fmt.Sprintf("unable to make mountpoint(%s): %s", v.Mountpoint, err))
+	}
+
+
+	// mount
+	err = d.mountDevice(v.Fstype, v.Device, v.Mountpoint)
+	if err != nil {
+		return responseError(fmt.Sprintf("unable to mount device(%s) to directory(%s): %s", v.Device, v.Mountpoint, err))
+	}
+
 
 	d.setVolume(v)
 	if err != nil {
@@ -285,8 +289,17 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 		if err != nil {
 			return responseError(err.Error())
 		}
+		v.Device = ""
 
+
+		// remove mountpoint
+		err = os.Remove(v.Mountpoint)
+		if err != nil {
+			return responseError(fmt.Sprintf("unable to remove mountpoint(%s): %s", v.Mountpoint, err))
+		}
 		v.Mountpoint = ""
+
+
 	}
 
 	d.setVolume(v)

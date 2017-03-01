@@ -1,5 +1,5 @@
 PLUGIN_NAME=wetopi/rbd
-PLUGIN_VERSION=0.1.3
+PLUGIN_VERSION=
 
 all: clean docker rootfs create
 
