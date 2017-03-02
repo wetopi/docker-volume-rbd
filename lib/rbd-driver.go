@@ -11,28 +11,17 @@ import (
 	"errors"
 	"time"
 	"regexp"
+	"os"
 )
 
 type rbdDriver struct {
-	root      string             // scratch dir for mounts for this plugin
-	conf      map[string]string  // ceph config params
+	root  string            // scratch dir for mounts for this plugin
+	conf  map[string]string // ceph config params
 
-	sync.RWMutex                 // mutex to guard operations that change volume maps or use conn
+	sync.RWMutex            // mutex to guard operations that change volume maps or use conn
 
-	conn      *rados.Conn        // create a connection for each API operation
-	ioctx     *rados.IOContext   // context for requested pool
-}
-
-
-// Volume is the Docker concept which we map onto a Ceph RBD Image
-type Volume struct {
-	Name        string // RBD Image name
-	Fstype      string
-	Pool        string
-	Size        uint64
-	Order       int    // Specifies the object size expressed as a number of bits. The default is 22 (4KB).
-	Mountpoint  string
-	Device      string
+	conn  *rados.Conn       // create a connection for each API operation
+	ioctx *rados.IOContext  // context for requested pool
 }
 
 var (
@@ -129,8 +118,7 @@ func (d *rbdDriver) shutdown() {
 	}
 }
 
-
-func (d *rbdDriver) rbdImageExists(pool, findName string) (error, bool) {
+func (d *rbdDriver) rbdImageExists(pool string, findName string) (error, bool) {
 	logrus.WithField("rbd-driver.go", "rbdDriver.rbdImageExists").Debugf("checking if RBD Image(%s) name in pool %s", findName, pool)
 
 	if findName == "" {
@@ -151,9 +139,9 @@ func (d *rbdDriver) rbdImageExists(pool, findName string) (error, bool) {
 }
 
 
-// createRBDImage will create a new Ceph block device and make a filesystem on it
-func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, order int, fstype string) error {
-	logrus.WithField("rbd-driver.go", "rbdDriver.createRBDImage").Debugf("create image in pool(%s) name(%s) size(%dMB) fstype(%s)", pool, imageName, size, fstype)
+// createRbdImage will create a new Ceph block device and make a filesystem on it
+func (d *rbdDriver) createRbdImage(pool string, imageName string, size uint64, order int, fstype string) error {
+	logrus.WithField("rbd-driver.go", "rbdDriver.createRbdImage").Debugf("create image in pool(%s) name(%s) size(%dMB) fstype(%s)", pool, imageName, size, fstype)
 
 	// check that fs is valid type (needs mkfs.fstype in PATH)
 	mkfs, err := exec.LookPath("mkfs." + fstype)
@@ -163,7 +151,7 @@ func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, o
 
 
 	// create the image
-	sizeInBytes := size*1024*1024
+	sizeInBytes := size * 1024 * 1024
 	_, err = rbd.Create(d.ioctx, imageName, sizeInBytes, order)
 	if err != nil {
 		return err
@@ -173,7 +161,7 @@ func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, o
 	// map to kernel device only to initialize
 	device, err := d.mapImage(pool, imageName)
 	if err != nil {
-		defer d.removeRBDImage(device)
+		defer d.removeRbdImage(device)
 		return err
 	}
 
@@ -181,7 +169,7 @@ func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, o
 	_, err = shWithTimeout(5 * time.Minute, mkfs, device)
 	if err != nil {
 		d.unmapImageDevice(pool, imageName)
-		defer d.removeRBDImage(device)
+		defer d.removeRbdImage(device)
 		return err
 	}
 
@@ -193,8 +181,8 @@ func (d *rbdDriver) createRBDImage(pool string, imageName string, size uint64, o
 }
 
 
-func (d *rbdDriver) removeRBDImage(name string) error {
-	logrus.WithField("rbd-driver.go", "rbdDriver.removeRBDImage").Debugf("remove image name(%s)", name)
+func (d *rbdDriver) removeRbdImage(name string) error {
+	logrus.WithField("rbd-driver.go", "rbdDriver.removeRbdImage").Debugf("remove image(%s)", name)
 
 	// build image struct
 	rbdImage := rbd.GetImage(d.ioctx, name)
@@ -204,32 +192,23 @@ func (d *rbdDriver) removeRBDImage(name string) error {
 }
 
 
-/*
-func getMappings(pool string, name string) (map[string]map[string]string, error) {
-	logrus.WithField("function", "getMappings").Debugf("get a list of image(%s) mappings in pool(%s)", name, pool)
+func (d *rbdDriver) freeUpRbdImage(pool string, imageName string, mountpoint string) error {
 
-	bytes, err := exec.Command("rbd", "showmapped", "--format", "json").Output()
-
+	// unmount
+	err := d.unmountDevice(pool, imageName)
 	if err != nil {
-		logrus.WithField("function", "getMappings").Error("failed to execute the `rbd showmapped` command.")
-		return nil, err
+		// warn and continue. unmap knows if device is being used
+		logrus.WithField("rbd-driver.go", "rbdDriver.freeUpRbdImage").Warnf("unable to unmount image(%s):", imageName, err)
 	}
 
-	var mappings map[string]map[string]string
-
-	err = json.Unmarshal(bytes, &mappings)
+	// remove mountpoint
+	err = os.Remove(mountpoint)
 	if err != nil {
-		logrus.WithField("function", "getMappings").Errorf("Failed to unmarshal json: %v", string(bytes))
-		return nil, err
+		logrus.WithField("rbd-driver.go", "rbdDriver.freeUpRbdImage").Warnf("unable to remove image(%s) mountpoint(%s): %s", imageName, mountpoint, err)
 	}
 
-	mymappings := make(map[string]map[string]string)
-	for k, v := range mappings {
-		if v["pool"] == pool {
-			mymappings[k] = v
-		}
-	}
+	// unmap
+	err = d.unmapImageDevice(pool, imageName)
 
-	return mymappings, nil
+	return err
 }
-*/

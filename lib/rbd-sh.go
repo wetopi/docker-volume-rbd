@@ -1,8 +1,8 @@
 package dockerVolumeRbd
 
 import (
-	"fmt"
 	"github.com/Sirupsen/logrus"
+	"path/filepath"
 )
 
 
@@ -19,7 +19,7 @@ func (d *rbdDriver) mapImage(pool string, imageName string) (string, error) {
 	device, err := d.rbdsh(pool, "map", imageName)
 	// NOTE: ubuntu rbd map seems to not return device. if no error, assume "default" /dev/rbd/<pool>/<image> device
 	if device == "" && err == nil {
-		device = fmt.Sprintf("/dev/rbd/%s/%s", pool, imageName)
+		device = filepath.Join(d.conf["device_map_root"], pool, imageName)
 	}
 
 	return device, err
@@ -46,12 +46,14 @@ func (d *rbdDriver) unmapImageDevice(pool string, imageName string) error {
 	return nil
 }
 
-func (d *rbdDriver) mountDevice(fstype, device, mountdir string) error {
+func (d *rbdDriver) mountDevice(pool string, imageName string, fstype, mountdir string) error {
+	device := filepath.Join(d.conf["device_map_root"], pool, imageName)
 	_, err := shWithDefaultTimeout("mount", "-t", fstype, device, mountdir)
 	return err
 }
 
-func (d *rbdDriver) unmountDevice(device string) error {
+func (d *rbdDriver) unmountDevice(pool string, imageName string) error {
+	device := filepath.Join(d.conf["device_map_root"], pool, imageName)
 	_, err := shWithDefaultTimeout("umount", device)
 	return err
 }

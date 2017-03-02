@@ -8,6 +8,17 @@ import (
 	"os"
 )
 
+// Volume is the Docker concept which we map onto a Ceph RBD Image
+type Volume struct {
+	Name       string // RBD Image name
+	Fstype     string
+	Pool       string
+	Size       uint64
+	Order      int    // Specifies the object size expressed as a number of bits. The default is 22 (4KB).
+	Mountpoint string
+	Device     string
+}
+
 
 // Implement the Docker VolumeDriver API via volume interface
 // https://github.com/docker/go-plugins-helpers/blob/master/volume/api.go
@@ -75,7 +86,6 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 		}
 	}
 
-
 	if v.Pool == "" {
 		return responseError("'pool' option required")
 	}
@@ -96,7 +106,7 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 
 	if !exists {
 		// try to create it
-		err = d.createRBDImage(v.Pool, v.Name, v.Size, v.Order, v.Fstype)
+		err = d.createRbdImage(v.Pool, v.Name, v.Size, v.Order, v.Fstype)
 		if err != nil {
 			return responseError(fmt.Sprintf("unable to create Ceph RBD Image(%s): %s", v.Name, err))
 		}
@@ -109,7 +119,6 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 
 	return volume.Response{}
 }
-
 
 func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 	logrus.WithField("rbd-docker.go", "Remove").Infof("Remove Called %#v", r)
@@ -142,7 +151,13 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 		logrus.WithField("rbd-docker.go", "Remove").Warnf("rbd image not found: %s", v.Name)
 
 	} else {
-		err = d.removeRBDImage(v.Name)
+
+		if v.Mountpoint != "" {
+			logrus.WithField("rbd-docker.go", "Remove").Warnf("attempt to free up image(%s) with an active mountpoint(%s) before removing the image", v.Name, v.Mountpoint)
+			d.freeUpRbdImage(v.Pool, v.Name, v.Mountpoint)
+		}
+
+		err = d.removeRbdImage(v.Name)
 		if err != nil {
 			return responseError(fmt.Sprintf("unable to remove rbd image(%s): %s", v.Name, err))
 		}
@@ -155,7 +170,6 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 
 	return volume.Response{}
 }
-
 
 func (d *rbdDriver) Path(r volume.Request) volume.Response {
 	logrus.WithField("rbd-docker.go", "Path").Infof("Path Called %#v", r)
@@ -232,11 +246,10 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 
 
 	// mount
-	err = d.mountDevice(v.Fstype, v.Device, v.Mountpoint)
+	err = d.mountDevice(v.Pool, v.Name, v.Fstype, v.Mountpoint)
 	if err != nil {
 		return responseError(fmt.Sprintf("unable to mount device(%s) to directory(%s): %s", v.Device, v.Mountpoint, err))
 	}
-
 
 	d.setVolume(v)
 	if err != nil {
@@ -278,32 +291,16 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 
 	if v.Mountpoint != "" {
 
-		// unmount
-		err = d.unmountDevice(v.Device)
-		if err != nil {
-			return responseError(err.Error())
-		}
-
-
-		// unmap
-		err = d.unmapImageDevice(v.Pool, v.Name)
+		err = d.freeUpRbdImage(v.Pool, v.Name, v.Mountpoint)
 		if err != nil {
 			return responseError(err.Error())
 		}
 		v.Device = ""
-
-
-		// remove mountpoint
-		err = os.Remove(v.Mountpoint)
-		if err != nil {
-			return responseError(fmt.Sprintf("unable to remove mountpoint(%s): %s", v.Mountpoint, err))
-		}
 		v.Mountpoint = ""
-
+		d.setVolume(v)
 
 	}
 
-	d.setVolume(v)
 	if err != nil {
 		return responseError(fmt.Sprintf("unable to setVolume(%s) state: %s", v.Name, err))
 	}

@@ -19,6 +19,12 @@
             ]
         },
         {
+            "name": "RBD_CONF_MAP_DEVICE_ROOT",
+            "settable": [
+                "value"
+            ]
+        },
+        {
             "name": "RBD_CONF_CLUSTER",
             "settable": [
                 "value"

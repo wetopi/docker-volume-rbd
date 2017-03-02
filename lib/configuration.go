@@ -18,8 +18,9 @@ func (d *rbdDriver) configure() error {
 
 	var err error
 
-	// set default conf:
+	// set default confs:
 	d.conf["cluster"] = "ceph"
+	d.conf["device_map_root"] = "/dev/rbd"
 
 	d.loadEnvironmentRbdConfigVars();
 

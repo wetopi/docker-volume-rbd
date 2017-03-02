@@ -2,10 +2,18 @@
 
 Docker Engine managed plugin to for RBD volumes.
 
-
 This plugins is managed using Docker Engine plugin system.
 [https://github.com/docker/docker/blob/master/docs/extend/index.md](https://github.com/docker/docker/blob/master/docs/extend/index.md)
 
+## Requirements
+
+1. Docker >=1.13.1 (recommended)
+2. Ceph cluster
+3. Consul. We need a KV store to persist state. 
+
+## Why an external KV store?
+
+Plugin runs on its own container 
 
 ## Using this volume driver
 
@@ -18,6 +26,7 @@ LOG_LEVEL=[0:ErrorLevel; 1:WarnLevel; 2:InfoLevel; 3:DebugLevel] defaults to 0
 
 CONSUL_ADDRESS=localhost:8500
 
+RBD_CONF_MAP_DEVICE_ROOT="/dev/rbd"
 RBD_CONF_CLUSTER=ceph
 
 RBD_CONF_KEYRING_USER=client.admin
@@ -41,12 +50,11 @@ RBD_CONF_MDS_SESSION_AUTOCLOSE=600
 
 ### 2 - Install the plugin
 
-```sh
-$ docker plugin install wetopi/rbd \
+```bash
+docker plugin install wetopi/rbd \
   LOG_LEVEL=1 \
   RBD_CONF_KEYRING_USER=client.admin \
-  RBD_CONF_KEYRING_KEY=ASSDFGDFGSDGSDFGDSGDSFGSD== \
-  ...
+  RBD_CONF_KEYRING_KEY="ASSDFGDFGSDGSDFGDSGDSFGSD=="
 ```
 
 ### 3 - Create and use a volume
@@ -65,9 +73,9 @@ order: optional, defaults to 22 (4KB Objects)
 [https://docs.docker.com/engine/reference/commandline/volume_create/](https://docs.docker.com/engine/reference/commandline/volume_create/)
 
 ```sh
-$ docker volume create -d wetopi/rbd -o pool=rbd -o size=206 my_rbd_volume
+docker volume create -d wetopi/rbd -o pool=rbd -o size=206 my_rbd_volume
 
-$ docker volume ls
+docker volume ls
 DRIVER              VOLUME NAME
 local               069d59c79366294d07b9102dde97807aeaae49dc26bb9b79dd5b983f7041d069
 local               11db1fa5ba70752101be90a80ee48f0282a22a3c8020c1042219ed1ed5cb0557
@@ -77,7 +85,7 @@ wetopi/rbd          my_rbd_volume
 
 #### 3.B - Run a container with a previously created volume: 
 
-```sh
+```bash
 docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd busybox sh
 ```
 
@@ -85,7 +93,7 @@ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd busybox sh
 
 *NOTE: Docker 1.13.1 does not support volume opts on docker run or docker create*
 
-```sh
+```bash
 docker run -it -v $(docker volume create -d wetopi/rbd -o pool=rbd -o size=206):/data --volume-driver=wetopi/rbd -o pool=rbd -o size=206 busybox sh
 ```
 
