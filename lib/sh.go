@@ -17,7 +17,7 @@ var (
 func sh(name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
 
-	logrus.WithField("sh", "sh").Debugf("sh CMD: %q", cmd)
+	logrus.WithField("sh.go", "sh").Debugf("sh: %q", cmd)
 
 	out, err := cmd.Output()
 	return strings.Trim(string(out), " \n"), err
@@ -38,7 +38,7 @@ func shWithTimeout(howLong time.Duration, name string, args ...string) (string, 
 	// set up the results channel
 	resultsChan := make(chan ShResult, 1)
 
-	logrus.WithField("sh", "shWithTimeout").Debugf("shWithTimeout: shWithTimeout: %v, %s, %v", howLong, name, args)
+	logrus.WithField("sh.go", "shWithTimeout").Debugf("shWithTimeout: %v, %s, %v", howLong, name, args)
 
 
 	// fire up the goroutine for the actual shell command

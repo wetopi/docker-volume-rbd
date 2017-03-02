@@ -37,7 +37,7 @@ import (
 //    Respond with a string error if an error occurred.
 //
 func (d *rbdDriver) Create(r volume.Request) volume.Response {
-	logrus.WithField("api", "Create").Debugf("%#v", r)
+	logrus.WithField("rbd-docker.go", "Create").Infof("Create Called %#v", r)
 
 	d.Lock()
 	defer d.Unlock()
@@ -89,7 +89,7 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 	}
 	defer d.shutdown()
 
-	exists, err := d.rbdImageExists(v.Pool, v.Name)
+	err, exists := d.rbdImageExists(v.Pool, v.Name)
 	if err != nil {
 		return responseError(fmt.Sprintf("unable to check for rbd image: %s", err))
 	}
@@ -112,7 +112,7 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 
 
 func (d *rbdDriver) Remove(r volume.Request) volume.Response {
-	logrus.WithField("api", "Remove").Debugf("%#v", r)
+	logrus.WithField("rbd-docker.go", "Remove").Infof("Remove Called %#v", r)
 
 	d.Lock()
 	defer d.Unlock()
@@ -133,13 +133,13 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 	}
 	defer d.shutdown()
 
-	exists, err := d.rbdImageExists(v.Pool, v.Name)
+	err, exists := d.rbdImageExists(v.Pool, v.Name)
 	if err != nil {
 		return responseError(fmt.Sprintf("unable to check for rbd image: %s", err))
 	}
 
 	if !exists {
-		logrus.WithField("api", "Remove").Warnf("rbd image not found: %s", v.Name)
+		logrus.WithField("rbd-docker.go", "Remove").Warnf("rbd image not found: %s", v.Name)
 
 	} else {
 		err = d.removeRBDImage(v.Name)
@@ -158,7 +158,7 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 
 
 func (d *rbdDriver) Path(r volume.Request) volume.Response {
-	logrus.WithField("method", "path").Debugf("%#v", r)
+	logrus.WithField("rbd-docker.go", "Path").Infof("Path Called %#v", r)
 
 	d.RLock()
 	defer d.RUnlock()
@@ -192,7 +192,7 @@ func (d *rbdDriver) Path(r volume.Request) volume.Response {
 //    made available, and/or a string error if an error occurred.
 //
 func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
-	logrus.WithField("api", "Mount").Debugf("%#v", r)
+	logrus.WithField("rbd-docker.go", "Mount").Infof("Mount Called %#v", r)
 
 	var err error
 
@@ -209,8 +209,9 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 	}
 
 	if v.Mountpoint != "" {
-		logrus.WithField("api", "Mount").Warnf("this volume(%s) has a previous registered mountpoint(%s)", v.Name, v.Mountpoint)
+		logrus.WithField("rbd-docker.go", "Mount").Warnf("this volume(%s) has a previous registered mountpoint(%s)", v.Name, v.Mountpoint)
 	}
+
 
 	// set mountpoint
 	v.Mountpoint = d.getTheMountPointPath(v.Name)
@@ -259,7 +260,7 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 //    Respond with a string error if an error occurred.
 //
 func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
-	logrus.WithField("api", "Unmount").Debugf("%#v", r)
+	logrus.WithField("rbd-docker.go", "Unmount").Infof("Unmount Called %#v", r)
 
 	var err error
 
@@ -285,7 +286,7 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 
 
 		// unmap
-		err = d.unmapImageDevice(v.Device)
+		err = d.unmapImageDevice(v.Pool, v.Name)
 		if err != nil {
 			return responseError(err.Error())
 		}
@@ -326,7 +327,7 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 //    and/or a string error if an error occurred.
 //
 func (d *rbdDriver) Get(r volume.Request) volume.Response {
-	logrus.WithField("api", "Get").Debugf("%#v", r)
+	logrus.WithField("rbd-docker.go", "Get").Infof("Get Called %#v", r)
 
 	d.Lock()
 	defer d.Unlock()
@@ -359,7 +360,7 @@ func (d *rbdDriver) Get(r volume.Request) volume.Response {
 //    made available).
 //
 func (d *rbdDriver) List(r volume.Request) volume.Response {
-	logrus.WithField("api", "List").Debugf("%#v", r)
+	logrus.WithField("rbd-docker.go", "List").Infof("List Called %#v", r)
 
 	d.Lock()
 	defer d.Unlock()
@@ -381,7 +382,7 @@ func (d *rbdDriver) List(r volume.Request) volume.Response {
 // Capabilities
 // Scope: global - the cluster manager knows it only needs to create the volume once instead of on every engine
 func (d *rbdDriver) Capabilities(r volume.Request) volume.Response {
-	logrus.WithField("api", "Capabilities").Debugf("%#v", r)
+	logrus.WithField("rbd-docker.go", "Capabilities").Infof("Capabilities Called %#v", r)
 
 	return volume.Response{
 		Capabilities: volume.Capability{

@@ -28,15 +28,15 @@ rootfs:
 	@docker rm -vf tmp
 
 create:
-	@echo "### remove existing plugin ${PLUGIN_NAME}:${PLUGIN_VERSION} if exists"
-	@docker plugin rm -f ${PLUGIN_NAME}:${PLUGIN_VERSION} || true
-	@echo "### create new plugin ${PLUGIN_NAME}:${PLUGIN_VERSION} from ./plugin"
-	@docker plugin create ${PLUGIN_NAME}:${PLUGIN_VERSION} ./plugin
+	@echo "### remove existing plugin ${PLUGIN_NAME} if exists"
+	@docker plugin rm -f ${PLUGIN_NAME} || true
+	@echo "### create new plugin ${PLUGIN_NAME} from ./plugin"
+	@docker plugin create ${PLUGIN_NAME} ./plugin
 
 enable:
-	@echo "### enable plugin ${PLUGIN_NAME}:${PLUGIN_VERSION}"
-	@docker plugin enable ${PLUGIN_NAME}:${PLUGIN_VERSION}
+	@echo "### enable plugin ${PLUGIN_NAME}"
+	@docker plugin enable ${PLUGIN_NAME}
 
 push: clean docker rootfs create enable
-	@echo "### push plugin ${PLUGIN_NAME}:${PLUGIN_VERSION}"
+	@echo "### push plugin ${PLUGIN_NAME}"
 	@docker plugin push ${PLUGIN_NAME}

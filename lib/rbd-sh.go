@@ -26,17 +26,17 @@ func (d *rbdDriver) mapImage(pool string, imageName string) (string, error) {
 }
 
 // unmapImageDevice will release the mapped kernel device
-func (d *rbdDriver) unmapImageDevice(device string) error {
+func (d *rbdDriver) unmapImageDevice(pool string, imageName string) error {
 
-	_, err := d.rbdsh("", "unmap", device)
+	_, err := d.rbdsh(pool, "unmap", imageName)
 
 	if err != nil {
-		logrus.WithField("method", "unmapImageDevice").Errorf("unmapping image device(%s): %s", device, err.Error())
+		logrus.WithField("rbd-sh.go", "unmapImageDevice").Errorf("rbd unmap %s --pool %s: %s", imageName, pool, err.Error())
 
 		// NOTE: rbd unmap exits 16 if device is still being used - unlike umount.  try to recover differently in that case
 		if rbdUnmapBusyRegexp.MatchString(err.Error()) {
 			// can't always re-mount and not sure if we should here ... will be cleaned up once original container goes away
-			logrus.WithField("method", "unmapImageDevice").Errorf("unmap failed due to busy device, early exit from this Unmount request")
+			logrus.WithField("rbd-sh.go", "unmapImageDevice").Errorf("unmap failed due to busy device, early exit from this Unmount request")
 			return err
 		}
 

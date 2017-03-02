@@ -14,7 +14,7 @@ const KEY_PREFIX = "docker/volume/rbd/"
 const DEFAULT_CONSUL_ADDRESS = "localhost:8500"
 
 func (d *rbdDriver) setVolume(v *Volume) error {
-	logrus.WithField("method", "setVolume").Debugf("%#v", v)
+	logrus.WithField("consul.go", "setVolume").Debugf("%#v", v)
 
 	err, kv := getConnection()
 	if err != nil {
@@ -23,14 +23,14 @@ func (d *rbdDriver) setVolume(v *Volume) error {
 
 	data, err := json.Marshal(v)
 	if err != nil {
-		logrus.WithField("method", "consul.setVolume").Error(err)
+		logrus.WithField("consul.go", "setVolume").Error(err)
 		return err
 	}
 
 	p := &api.KVPair{Key: getKeyFromName(v.Name), Value: data}
 	_, err = kv.Put(p, nil)
 	if err != nil {
-		logrus.WithField("method", "consul.setVolume").Error(err)
+		logrus.WithField("consul.go", "setVolume").Error(err)
 		panic(err)
 	}
 
@@ -39,7 +39,7 @@ func (d *rbdDriver) setVolume(v *Volume) error {
 }
 
 func (d *rbdDriver) deleteVolume(name string) (error) {
-	logrus.WithField("method", "consul.deleteVolume").Debugf("volume name: %s", name)
+	logrus.WithField("consul.go", "deleteVolume").Debugf("volume name: %s", name)
 
 	err, kv := getConnection()
 	if err != nil {
@@ -48,7 +48,7 @@ func (d *rbdDriver) deleteVolume(name string) (error) {
 
 	_, err = kv.Delete(getKeyFromName(name), nil)
 	if err != nil {
-		logrus.WithField("method", "consul.deleteVolume").Error(err)
+		logrus.WithField("consul.go", "deleteVolume").Error(err)
 		return err
 	}
 
@@ -56,7 +56,7 @@ func (d *rbdDriver) deleteVolume(name string) (error) {
 }
 
 func (d *rbdDriver) getVolume(name string) (error, *Volume) {
-	logrus.WithField("method", "consul.getVolume").Debugf("volume name: %s", name)
+	logrus.WithField("consul.go", "getVolume").Debugf("volume name: %s", name)
 
 	err, kv := getConnection()
 	if err != nil {
@@ -65,17 +65,15 @@ func (d *rbdDriver) getVolume(name string) (error, *Volume) {
 
 	pair, _, err := kv.Get(getKeyFromName(name), nil)
 	if err != nil {
-		logrus.WithField("method", "consul.getVolume").Error(err)
+		logrus.WithField("consul.go", "getVolume").Error(err)
 		return err, nil
 	}
 
 	v := Volume{}
 
 	if (pair != nil) {
-		logrus.WithField("method", "consul.getVolume").Debugf("pair: %s=%s ", pair.Key, pair.Value)
-
 		if err := json.Unmarshal(pair.Value, &v); err != nil {
-			logrus.WithField("method", "consul.getVolume").Error(err)
+			logrus.WithField("consul.go", "getVolume").Error(err)
 			return err, nil
 		}
 	}
@@ -84,7 +82,7 @@ func (d *rbdDriver) getVolume(name string) (error, *Volume) {
 }
 
 func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
-	logrus.WithField("method", "consul.getVolumes").Debug("get list of volumes")
+	logrus.WithField("consul.go", "getVolumes").Debug("get list of volumes")
 
 	err, kv := getConnection()
 	if err != nil {
@@ -93,7 +91,7 @@ func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
 
 	pairs, _, err := kv.List(getKeyFromName(""), nil)
 	if err != nil {
-		logrus.WithField("method", "consul.getVolumes").Error(err)
+		logrus.WithField("consul.go", "getVolumes").Error(err)
 		return err, nil
 	}
 
@@ -104,7 +102,7 @@ func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
 		v := Volume{}
 
 		if err := json.Unmarshal(pair.Value, &v); err != nil {
-			logrus.WithField("method", "consul.getVolumes").Error(err)
+			logrus.WithField("consul.go", "getVolumes").Error(err)
 			return err, nil
 		}
 
@@ -126,7 +124,7 @@ func getConnection() (error, *api.KV) {
 
 	client, err := api.NewClient(config)
 	if err != nil {
-		logrus.WithField("method", "consul.getConnection").Error(err)
+		logrus.WithField("consul.go", "getConnection").Error(err)
 		return err, nil
 	}
 

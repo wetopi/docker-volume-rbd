@@ -7,14 +7,14 @@ This plugins is managed using Docker Engine plugin system.
 [https://github.com/docker/docker/blob/master/docs/extend/index.md](https://github.com/docker/docker/blob/master/docs/extend/index.md)
 
 
-## Usage
+## Using this volume driver
 
-### 1 - Configure options
+### 1 - Available driver options
 
 Key value vars to pass when installing this plugin driver:
 
-```
-DEBUG=1
+```conf
+LOG_LEVEL=[0:ErrorLevel; 1:WarnLevel; 2:InfoLevel; 3:DebugLevel] defaults to 0
 
 CONSUL_ADDRESS=localhost:8500
 
@@ -41,28 +41,31 @@ RBD_CONF_MDS_SESSION_AUTOCLOSE=600
 
 ### 2 - Install the plugin
 
-```
+```sh
 $ docker plugin install wetopi/rbd \
-  DEBUG=1 \
+  LOG_LEVEL=1 \
   RBD_CONF_KEYRING_USER=client.admin \
   RBD_CONF_KEYRING_KEY=ASSDFGDFGSDGSDFGDSGDSFGSD== \
   ...
 ```
 
-### 3 - Create a volume
+### 3 - Create and use a volume
 
-Available options:
+#### Available volume driver options:
 
+```conf
 pool: required
 fstype: optional, defauls to ext4
 size: optional, defaults to 512 (512MB)
 order: optional, defaults to 22 (4KB Objects)
+```
 
+#### 3.A - Create a volume: 
 
 [https://docs.docker.com/engine/reference/commandline/volume_create/](https://docs.docker.com/engine/reference/commandline/volume_create/)
 
-```
-$ docker volume create -d wetopi/rbd:0.1.3 -o pool=rbd -o size=206 my_rbd_volume
+```sh
+$ docker volume create -d wetopi/rbd -o pool=rbd -o size=206 my_rbd_volume
 
 $ docker volume ls
 DRIVER              VOLUME NAME
@@ -72,27 +75,79 @@ local               2d1f2a8fac147b7e7a6b95ca227eba2ff859325210c7280ccb73fd5beda6
 wetopi/rbd          my_rbd_volume
 ```
 
-### 4 - Use the volume
+#### 3.B - Run a container with a previously created volume: 
 
-```
-$ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd:0.1.3 busybox sh
-```
-
-### 5 - Upgrading the plugin
-
-```
-$ docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.1.3 
+```sh
+docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd busybox sh
 ```
 
-IMPORTANT: currently (docker version 1.13.1) tag/version is considered part of plugins name. This produces name inconsistency during the upgrade process. Until it's solved we release upgrades under the latest tag. 
+#### 3.C - Run a container with an anonymous volume: 
+
+*NOTE: Docker 1.13.1 does not support volume opts on docker run or docker create*
+
+```sh
+docker run -it -v $(docker volume create -d wetopi/rbd -o pool=rbd -o size=206):/data --volume-driver=wetopi/rbd -o pool=rbd -o size=206 busybox sh
+```
+
+#### 3.D - Create a service with a previously created volume: 
+
+```bash
+ docker service create --replicas=1 \
+   --mount type=volume,source=my_rbd_volume,destination=/var/lib/mysql,volume-driver=wetopi/rbd \
+   mariadb:latest
+```
+
+#### 3.E - Create a service with an anonymous volume: 
+
+```bash
+ docker service create --replicas=1 \
+   -e MYSQL_ROOT_PASSWORD=my-secret-pw \
+   --mount type=volume,destination=/var/lib/mysql,volume-driver=wetopi/rbd,volume-opt=pool=rbd,volume-opt=size=512 \
+   mariadb:latest
+```
+
+
+### 4 - Upgrading the plugin
+
+#### 4.1 Upgrade whitout tag versioning:
+
+
+```bash
+docker plugin disable -f wetopi/rbd 
+docker plugin upgrade wetopi/rbd 
+```
+
+Update setting [Optional]:
+```bash
+docker plugin set wetopi/rbd \
+  LOG_LEVEL=2 \
+  RBD_CONF_KEYRING_USER=client.admin \
+  ...
+```
+
+Enable the plugin:
+```bash
+docker plugin enable wetopi/rbd 
+```
+
+
+#### 4.2 Upgrade whit tag versioning:
+
+**IMPORTANT:** *currently (docker version 1.13.1) tag/version is considered part of plugins name. This produces name inconsistency during the upgrade process. Until it's solved we release upgrades under the latest tag.*
+
+```bash
+docker plugin disable -f wetopi/rbd:0.1.2
+docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.1.3 
+```
+
 
 
 ## Troubleshooting
 
-### Check your plugin is enabled:
+#### Check your plugin is enabled:
 
-```sh
-$ docker plugin ls
+```bash
+docker plugin ls
 
 ID                  NAME                DESCRIPTION               ENABLED
 fff19fa9a622        wetopi/rbd:0.1.3    RBD plugin for Docker     true
@@ -100,20 +155,30 @@ fff19fa9a622        wetopi/rbd:0.1.3    RBD plugin for Docker     true
 
 ### Exec an interactiva bash in plugins container:
 
-find the full id:
+Find the full id:
 
-```
+```bash
 docker-runc list | grep fff19fa9a622
-
 ```
+
+Exec an interactive shell:
+
+```bash
 docker-runc exec -t fff19fa9a622885f5bcc30c0199046761825b037b25523540647b12ccf84403be bash
 ```
 
-If this container is not running or restarting, then check your docker engine log i.e. `tail -f /var/log/upstart/docker` 
-or its equivalent `journalctl -f -u docker.service`
+#### Log your driver:
+
+If this container is not running or restarting, then check your docker engine log i.e. 
+
+`tail -f /var/log/upstart/docker` 
+
+or its equivalent 
+
+`journalctl -f -u docker.service`
 
 
-### Check Consul Key Value:
+#### Check Consul Key Value:
 
 Check if state stored in Consul KV is consistent:
 
@@ -126,6 +191,7 @@ curl -s curl http://localhost:8500/v1/kv/docker/volume/rbd/my_rbd_volume?raw
 ## THANKS
 
 https://github.com/docker/go-plugins-helpers
+
 https://github.com/yp-engineering/rbd-docker-plugin
 
 ## LICENSE
