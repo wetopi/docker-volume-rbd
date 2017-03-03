@@ -117,7 +117,7 @@ docker run -it -v $(docker volume create -d wetopi/rbd -o pool=rbd -o size=206):
 
 ### 4 - Upgrading the plugin
 
-#### 4.1 Upgrade whitout tag versioning:
+#### 4.1 Upgrade without tag versioning:
 
 
 ```bash
@@ -139,7 +139,7 @@ docker plugin enable wetopi/rbd
 ```
 
 
-#### 4.2 Upgrade whit tag versioning:
+#### 4.2 Upgrade with tag versioning:
 
 **IMPORTANT:** *currently (docker version 1.13.1) tag/version is considered part of plugins name. This produces name inconsistency during the upgrade process. Until it's solved we release upgrades under the latest tag.*
 
@@ -194,6 +194,14 @@ Check if state stored in Consul KV is consistent:
 curl -s curl http://localhost:8500/v1/kv/docker/volume/rbd/my_rbd_volume?raw
 ```
 
+
+## Developing
+
+You can build and publish the plugin with:
+
+```bash
+make all
+```
 
 
 ## THANKS

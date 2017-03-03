@@ -12,6 +12,7 @@ import (
 	"time"
 	"regexp"
 	"os"
+	"encoding/json"
 )
 
 type rbdDriver struct {
@@ -34,7 +35,7 @@ var (
 // sets config and
 // open the state file rbd-state.json
 func NewDriver() (error, *rbdDriver) {
-	logrus.WithField("rbd-driver.go", "rbdDriver.NewDriver").Debug("launching rbd driver")
+	logrus.WithField("rbd-driver.go", "rbdDriver.NewDriver").Info("launching rbd driver")
 
 	driver := &rbdDriver{
 		root: filepath.Join("/mnt", "volumes"),
@@ -50,15 +51,9 @@ func NewDriver() (error, *rbdDriver) {
 }
 
 
-
-// mountPointOnHost returns the expected path on host
-func (d *rbdDriver) getTheMountPointPath(name string) string {
-	return filepath.Join(d.root, name)
-}
-
 // connect builds up the ceph conn and default pool
 func (d *rbdDriver) connect(pool string) error {
-	logrus.WithField("rbd-driver.go", "rbdDriver.connect").Debugf("connect to Ceph pool(%s)", pool)
+	logrus.WithField("rbd-driver.go", "rbdDriver.connect").Infof("connect to Ceph pool(%s)", pool)
 
 	// create the go-ceph Client Connection
 	var cephConn *rados.Conn
@@ -108,7 +103,7 @@ func (d *rbdDriver) connect(pool string) error {
 // - https://github.com/ceph/go-ceph/blob/f251b53/rados/ioctx.go#L140
 // - http://docs.ceph.com/docs/master/rados/api/librados/
 func (d *rbdDriver) shutdown() {
-	logrus.WithField("rbd-driver.go", "rbdDriver.shutdown").Debug("connection shutdown from Ceph")
+	logrus.WithField("rbd-driver.go", "rbdDriver.shutdown").Info("connection shutdown from Ceph")
 
 	if d.ioctx != nil {
 		d.ioctx.Destroy()
@@ -118,14 +113,14 @@ func (d *rbdDriver) shutdown() {
 	}
 }
 
-func (d *rbdDriver) rbdImageExists(pool string, findName string) (error, bool) {
-	logrus.WithField("rbd-driver.go", "rbdDriver.rbdImageExists").Debugf("checking if RBD Image(%s) name in pool %s", findName, pool)
+func (d *rbdDriver) rbdImageExists(pool string, imageName string) (error, bool) {
+	logrus.WithField("rbd-driver.go", "rbdDriver.rbdImageExists").Infof("checking if exists rbd image(%s) in pool(%s)", imageName, pool)
 
-	if findName == "" {
+	if imageName == "" {
 		return fmt.Errorf("error checking empty name in pool(%s)", pool), false
 	}
 
-	img := rbd.GetImage(d.ioctx, findName)
+	img := rbd.GetImage(d.ioctx, imageName)
 	err := img.Open(true)
 	defer img.Close()
 
@@ -141,7 +136,7 @@ func (d *rbdDriver) rbdImageExists(pool string, findName string) (error, bool) {
 
 // createRbdImage will create a new Ceph block device and make a filesystem on it
 func (d *rbdDriver) createRbdImage(pool string, imageName string, size uint64, order int, fstype string) error {
-	logrus.WithField("rbd-driver.go", "rbdDriver.createRbdImage").Debugf("create image in pool(%s) name(%s) size(%dMB) fstype(%s)", pool, imageName, size, fstype)
+	logrus.WithField("rbd-driver.go", "rbdDriver.createRbdImage").Infof("create image(%s) in pool(%s) with size(%dMB) and fstype(%s)", imageName, pool, size, fstype)
 
 	// check that fs is valid type (needs mkfs.fstype in PATH)
 	mkfs, err := exec.LookPath("mkfs." + fstype)
@@ -168,21 +163,21 @@ func (d *rbdDriver) createRbdImage(pool string, imageName string, size uint64, o
 	// make the filesystem (give it some time)
 	_, err = shWithTimeout(5 * time.Minute, mkfs, device)
 	if err != nil {
-		d.unmapImageDevice(pool, imageName)
+		d.unmapImageDevice(device)
 		defer d.removeRbdImage(device)
 		return err
 	}
 
 
 	// unmap until a container mounts it
-	defer d.unmapImageDevice(pool, imageName)
+	defer d.unmapImageDevice(device)
 
 	return nil
 }
 
 
 func (d *rbdDriver) removeRbdImage(name string) error {
-	logrus.WithField("rbd-driver.go", "rbdDriver.removeRbdImage").Debugf("remove image(%s)", name)
+	logrus.WithField("rbd-driver.go", "rbdDriver.removeRbdImage").Infof("remove image(%s)", name)
 
 	// build image struct
 	rbdImage := rbd.GetImage(d.ioctx, name)
@@ -192,23 +187,119 @@ func (d *rbdDriver) removeRbdImage(name string) error {
 }
 
 
-func (d *rbdDriver) freeUpRbdImage(pool string, imageName string, mountpoint string) error {
+func (d *rbdDriver) mountRbdImage(pool string, imageName string, fstype string) (err error, device string, mountpoint string) {
+	logrus.WithField("rbd-driver.go", "rbdDriver.mountRbdImage").Infof("map and mount image(%s)", imageName)
 
-	// unmount
-	err := d.unmountDevice(pool, imageName)
+	mountpoint = d.getTheMountPointPath(imageName)
+
+
+	// map the RBD image
+	device, err = d.mapImage(pool, imageName)
 	if err != nil {
-		// warn and continue. unmap knows if device is being used
-		logrus.WithField("rbd-driver.go", "rbdDriver.freeUpRbdImage").Warnf("unable to unmount image(%s):", imageName, err)
+		return fmt.Errorf("unable to map rbd image(%s) to kernel device: %s", imageName, err), "", ""
 	}
+
+
+	// check for mountdir - create if necessary
+	err = os.MkdirAll(mountpoint, os.ModeDir | os.FileMode(int(0775)))
+	if err != nil {
+		return fmt.Errorf("unable to make mountpoint(%s): %s", mountpoint, err), "", ""
+	}
+
+
+	// mount
+	err = d.mountDevice(device, fstype, mountpoint)
+	if err != nil {
+		return fmt.Errorf("unable to mount device(%s) to directory(%s): %s", device, mountpoint, err), "", ""
+	}
+
+	return err, device, mountpoint
+
+}
+
+/**
+Freeing Up an RBD image means
+first find all maps done on current plugin node
+then unmount + unmap and finally remove mountpoint dir
+
+We do all this silently, we want the freeUp process idempotent
+ */
+func (d *rbdDriver) freeUpRbdImage(pool string, imageName string, mountpoint string) error {
+	logrus.WithField("rbd-driver.go", "rbdDriver.freeUpRbdImage").Infof("free up image(%s)", imageName)
+
+	err, devices := getImageMappingDevices(pool, imageName)
+	if err != nil {
+		return err
+	}
+
+	for _, device := range devices {
+
+		// silently unmount
+		err := d.unmountDevice(device)
+		if err != nil {
+			// warn and continue. unmap knows if device is being used
+			logrus.WithField("rbd-driver.go", "rbdDriver.freeUpRbdImage").Warnf("unable to unmount image(%s) device(%s):", imageName, device, err)
+		}
+
+		// silently unmap
+		err = d.unmapImageDevice(device)
+		if err != nil {
+			// warn and continue. unmap knows if device is being used
+			logrus.WithField("rbd-driver.go", "rbdDriver.unmapImageDevice").Warnf("unable to unmap image(%s) device(%s):", imageName, device, err)
+		}
+	}
+
 
 	// remove mountpoint
-	err = os.Remove(mountpoint)
-	if err != nil {
-		logrus.WithField("rbd-driver.go", "rbdDriver.freeUpRbdImage").Warnf("unable to remove image(%s) mountpoint(%s): %s", imageName, mountpoint, err)
+	if mountpoint != "" {
+		err = os.Remove(mountpoint)
+		if err != nil {
+			logrus.WithField("rbd-driver.go", "rbdDriver.freeUpRbdImage").Warnf("unable to remove image(%s) mountpoint(%s): %s", imageName, mountpoint, err)
+		}
 	}
 
-	// unmap
-	err = d.unmapImageDevice(pool, imageName)
-
-	return err
+	return nil
 }
+
+
+/**
+Get a list of devices mapped with our image
+We do not want to relay on what driver state knows about mappings
+its safer to ask rbd
+ */
+func getImageMappingDevices(pool string, imageName string) (error, []string) {
+	logrus.WithField("rbd-driver.go", "getMappings").Debugf("get a list of image(%s) mappings in pool(%s)", imageName, pool)
+
+	bytes, err := exec.Command("rbd", "showmapped", "--format", "json").Output()
+
+	if err != nil {
+		logrus.WithField("function", "getMappings").Error("failed to execute the `rbd showmapped` command.")
+		return err, nil
+	}
+
+	var mappings map[string]map[string]string
+
+	err = json.Unmarshal(bytes, &mappings)
+	if err != nil {
+		logrus.WithField("rbd-driver.go", "getMappings").Errorf("failed to unmarshal json: %v", string(bytes))
+		return err, nil
+	}
+
+	//myImageMappings := make(map[string]map[string]string)
+	var myImageMappings []string
+
+	for _, v := range mappings {
+		if v["pool"] == pool && v["image"] == imageName {
+			myImageMappings = append(myImageMappings, v["device"])
+		}
+	}
+
+	return nil, myImageMappings
+}
+
+
+// mountPointOnHost returns the expected path on host
+func (d *rbdDriver) getTheMountPointPath(name string) string {
+	return filepath.Join(d.root, name)
+}
+

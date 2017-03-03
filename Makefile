@@ -1,7 +1,7 @@
 PLUGIN_NAME=wetopi/rbd
 PLUGIN_VERSION=
 
-all: clean docker rootfs create
+all: clean docker rootfs create push
 
 clean:
 	@echo "### rm ./plugin"
@@ -33,10 +33,18 @@ create:
 	@echo "### create new plugin ${PLUGIN_NAME} from ./plugin"
 	@docker plugin create ${PLUGIN_NAME} ./plugin
 
+push:
+	@echo "### push plugin ${PLUGIN_NAME}"
+	@docker plugin push ${PLUGIN_NAME}
+
 enable:
 	@echo "### enable plugin ${PLUGIN_NAME}"
 	@docker plugin enable ${PLUGIN_NAME}
 
-push: clean docker rootfs create enable
-	@echo "### push plugin ${PLUGIN_NAME}"
-	@docker plugin push ${PLUGIN_NAME}
+upgrade:
+	@echo "### disable plugin ${PLUGIN_NAME}"
+	@docker plugin disable -f ${PLUGIN_NAME}
+	@echo "### upgrade plugin ${PLUGIN_NAME}"
+	@docker plugin upgrade ${PLUGIN_NAME}
+	@echo "### enable plugin ${PLUGIN_NAME}"
+	@docker plugin enable ${PLUGIN_NAME}

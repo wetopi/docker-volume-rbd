@@ -16,6 +16,8 @@ import (
 
 // mapImage will map the RBD Image to a kernel device
 func (d *rbdDriver) mapImage(pool string, imageName string) (string, error) {
+	logrus.WithField("rbd-sh.go", "rbdDriver.mapImage").Infof("map image(%s) in pool(%s)", imageName, pool)
+
 	device, err := d.rbdsh(pool, "map", imageName)
 	// NOTE: ubuntu rbd map seems to not return device. if no error, assume "default" /dev/rbd/<pool>/<image> device
 	if device == "" && err == nil {
@@ -26,12 +28,13 @@ func (d *rbdDriver) mapImage(pool string, imageName string) (string, error) {
 }
 
 // unmapImageDevice will release the mapped kernel device
-func (d *rbdDriver) unmapImageDevice(pool string, imageName string) error {
+func (d *rbdDriver) unmapImageDevice(device string) error {
+	logrus.WithField("rbd-sh.go", "rbdDriver.unmapImageDevice").Infof("unmap device(%s)", device)
 
-	_, err := d.rbdsh(pool, "unmap", imageName)
+	_, err := d.rbdsh("unmap", device)
 
 	if err != nil {
-		logrus.WithField("rbd-sh.go", "unmapImageDevice").Errorf("rbd unmap %s --pool %s: %s", imageName, pool, err.Error())
+		logrus.WithField("rbd-sh.go", "unmapImageDevice").Errorf("rbd unmap %s: %s", device, err.Error())
 
 		// NOTE: rbd unmap exits 16 if device is still being used - unlike umount.  try to recover differently in that case
 		if rbdUnmapBusyRegexp.MatchString(err.Error()) {
@@ -46,19 +49,19 @@ func (d *rbdDriver) unmapImageDevice(pool string, imageName string) error {
 	return nil
 }
 
-func (d *rbdDriver) mountDevice(pool string, imageName string, fstype, mountdir string) error {
-	device := filepath.Join(d.conf["device_map_root"], pool, imageName)
-	_, err := shWithDefaultTimeout("mount", "-t", fstype, device, mountdir)
+func (d *rbdDriver) mountDevice(device string, fstype, mountpoint string) error {
+	logrus.WithField("rbd-sh.go", "rbdDriver.mountDevice").Infof("mount device(%s) in mountpoint(%s)", device, mountpoint)
+
+	_, err := shWithDefaultTimeout("mount", "-t", fstype, device, mountpoint)
 	return err
 }
 
-func (d *rbdDriver) unmountDevice(pool string, imageName string) error {
-	device := filepath.Join(d.conf["device_map_root"], pool, imageName)
+func (d *rbdDriver) unmountDevice(device string) error {
+	logrus.WithField("rbd-sh.go", "rbdDriver.unmountDevice").Infof("umount device(%s)", device)
 	_, err := shWithDefaultTimeout("umount", device)
 	return err
 }
 
-// UTIL
 
 // rbdsh will call rbd with the given command arguments, also adding config, user and pool flags
 func (d *rbdDriver) rbdsh(pool, command string, args ...string) (string, error) {
