@@ -312,7 +312,7 @@ func (d *rbdDriver) Get(r volume.Request) volume.Response {
 	}
 
 	if v.Name == "" {
-		return responseError(fmt.Sprintf("volume %s not found", r.Name))
+		return responseError(fmt.Sprintf("volume(%s) not found", r.Name))
 	}
 
 	return volume.Response{Volume: &volume.Volume{Name: r.Name, Mountpoint: v.Mountpoint}}

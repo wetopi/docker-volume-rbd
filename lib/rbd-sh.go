@@ -32,7 +32,7 @@ func (d *rbdDriver) mapImage(pool string, imageName string) (string, error) {
 func (d *rbdDriver) unmapImageDevice(device string) error {
 	logrus.WithField("rbd-sh.go", "rbdDriver.unmapImageDevice").Infof("unmap device(%s)", device)
 
-	_, err := d.rbdsh("unmap", device)
+	_, err := d.rbdsh("", "unmap", device)
 
 	if err != nil {
 		logrus.WithField("rbd-sh.go", "unmapImageDevice").Errorf("rbd unmap %s: %s", device, err.Error())
