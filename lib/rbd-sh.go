@@ -3,6 +3,7 @@ package dockerVolumeRbd
 import (
 	"github.com/Sirupsen/logrus"
 	"path/filepath"
+	"encoding/json"
 )
 
 
@@ -61,6 +62,48 @@ func (d *rbdDriver) unmountDevice(device string) error {
 	_, err := shWithDefaultTimeout("umount", device)
 	return err
 }
+
+
+
+/**
+Get a list of devices mapped with our image
+We do not want to relay on what driver state knows about mappings
+its safer to ask rbd
+ */
+func getImageMappingDevices(pool string, imageName string) (error, []string) {
+	logrus.WithField("rbd-sh.go", "getMappings").Infof("get a list of image(%s) mappings in pool(%s)", imageName, pool)
+
+	mappingsJson, err := shWithDefaultTimeout("rbd", "showmapped", "--format", "json")
+
+	if err != nil {
+		logrus.WithField("function", "getMappings").Error("failed to execute the `rbd showmapped` command.")
+		return err, nil
+	}
+
+	var mappings map[string]map[string]string
+
+	err = json.Unmarshal([]byte(mappingsJson), &mappings)
+	if err != nil {
+		logrus.WithField("rbd-driver.go", "getMappings").Errorf("failed to unmarshal json: %s", mappingsJson)
+		return err, nil
+	}
+
+	//myImageMappings := make(map[string]map[string]string)
+	var myImageMappings []string
+
+	for _, v := range mappings {
+
+		logrus.WithField("rbd-sh.go", "getMappings").Debugf("image(%s) found in pool(%s)", v["name"], v["pool"])
+
+		if v["pool"] == pool && v["name"] == imageName {
+			myImageMappings = append(myImageMappings, v["device"])
+		}
+	}
+
+	return nil, myImageMappings
+}
+
+
 
 
 // rbdsh will call rbd with the given command arguments, also adding config, user and pool flags

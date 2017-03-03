@@ -12,7 +12,6 @@ import (
 	"time"
 	"regexp"
 	"os"
-	"encoding/json"
 )
 
 type rbdDriver struct {
@@ -175,7 +174,6 @@ func (d *rbdDriver) createRbdImage(pool string, imageName string, size uint64, o
 	return nil
 }
 
-
 func (d *rbdDriver) removeRbdImage(name string) error {
 	logrus.WithField("rbd-driver.go", "rbdDriver.removeRbdImage").Infof("remove image(%s)", name)
 
@@ -185,7 +183,6 @@ func (d *rbdDriver) removeRbdImage(name string) error {
 	// remove the block device image
 	return rbdImage.Remove()
 }
-
 
 func (d *rbdDriver) mountRbdImage(pool string, imageName string, fstype string) (err error, device string, mountpoint string) {
 	logrus.WithField("rbd-driver.go", "rbdDriver.mountRbdImage").Infof("map and mount image(%s)", imageName)
@@ -261,41 +258,6 @@ func (d *rbdDriver) freeUpRbdImage(pool string, imageName string, mountpoint str
 	return nil
 }
 
-
-/**
-Get a list of devices mapped with our image
-We do not want to relay on what driver state knows about mappings
-its safer to ask rbd
- */
-func getImageMappingDevices(pool string, imageName string) (error, []string) {
-	logrus.WithField("rbd-driver.go", "getMappings").Debugf("get a list of image(%s) mappings in pool(%s)", imageName, pool)
-
-	bytes, err := exec.Command("rbd", "showmapped", "--format", "json").Output()
-
-	if err != nil {
-		logrus.WithField("function", "getMappings").Error("failed to execute the `rbd showmapped` command.")
-		return err, nil
-	}
-
-	var mappings map[string]map[string]string
-
-	err = json.Unmarshal(bytes, &mappings)
-	if err != nil {
-		logrus.WithField("rbd-driver.go", "getMappings").Errorf("failed to unmarshal json: %v", string(bytes))
-		return err, nil
-	}
-
-	//myImageMappings := make(map[string]map[string]string)
-	var myImageMappings []string
-
-	for _, v := range mappings {
-		if v["pool"] == pool && v["image"] == imageName {
-			myImageMappings = append(myImageMappings, v["device"])
-		}
-	}
-
-	return nil, myImageMappings
-}
 
 
 // mountPointOnHost returns the expected path on host

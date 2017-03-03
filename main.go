@@ -37,6 +37,6 @@ func main() {
 	}
 
 	h := volume.NewHandler(rbdDriver)
-	logrus.Infof("listening from plugin container to %s", socketAddress)
+	logrus.Infof("plugin(rbd) version(%s) started with log level(%s) attending socket(%s)", os.Getenv("DOCKER_VOLUME_RBD_VERSION"), logLevel, socketAddress)
 	logrus.Error(h.ServeUnix(socketAddress, 0))
 }

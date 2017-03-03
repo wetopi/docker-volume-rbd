@@ -6,6 +6,10 @@
     ],
     "env": [
         {
+            "name": "DOCKER_VOLUME_RBD_VERSION",
+            "value": "0.2.0"
+        },
+        {
             "name": "LOG_LEVEL",
             "settable": [
                 "value"
