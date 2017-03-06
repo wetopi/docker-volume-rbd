@@ -4,6 +4,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/ceph/go-ceph/rados"
 	"github.com/ceph/go-ceph/rbd"
+	"github.com/wetopi/docker-volume-rbd/lib/try"
 	"sync"
 	"path/filepath"
 	"fmt"
@@ -26,6 +27,7 @@ type rbdDriver struct {
 
 var (
 	rbdUnmapBusyRegexp = regexp.MustCompile(`^exit status 16$`)
+	rbdBusyRegexp = regexp.MustCompile(`ret=-16$`)
 )
 
 
@@ -182,6 +184,30 @@ func (d *rbdDriver) removeRbdImage(name string) error {
 
 	// remove the block device image
 	return rbdImage.Remove()
+}
+
+
+/**
+In case of race condition (the unmount and remove can be called async from different swarm nodes)
+we try to remove up to 3 times.
+ */
+func (d *rbdDriver) removeRbdImageWithRetries(name string) error {
+
+	err := try.Do(func(attempt int) (bool, error) {
+		var err error
+		err = d.removeRbdImage(name)
+
+		if err != nil && rbdBusyRegexp.MatchString(err.Error()) {
+			const MAX_ATTEMPTS = 3;
+			time.Sleep(2 * time.Second)
+
+			return attempt < MAX_ATTEMPTS, err
+		}
+
+		return false, err
+	})
+
+	return err
 }
 
 func (d *rbdDriver) mountRbdImage(pool string, imageName string, fstype string) (err error, device string, mountpoint string) {

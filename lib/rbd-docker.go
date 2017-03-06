@@ -157,7 +157,7 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 			return responseError(err.Error())
 		}
 
-		err = d.removeRbdImage(v.Name)
+		err = d.removeRbdImageWithRetries(v.Name)
 		if err != nil {
 			return responseError(fmt.Sprintf("unable to remove rbd image(%s): %s", v.Name, err))
 		}
@@ -360,4 +360,10 @@ func (d *rbdDriver) Capabilities(r volume.Request) volume.Response {
 			Scope: "global",
 		},
 	}
+}
+
+
+func responseError(err string) volume.Response {
+	logrus.Error(err)
+	return volume.Response{Err: err}
 }
