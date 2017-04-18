@@ -109,12 +109,11 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 		if err != nil {
 			return responseError(fmt.Sprintf("unable to create Ceph RBD Image(%s): %s", v.Name, err))
 		}
+	}
 
-		err = d.setVolume(v)
-		if err != nil {
-			return responseError(fmt.Sprintf("unable to save Volume(%s) state: %s", v.Name, err))
-		}
-
+	err = d.setVolume(v)
+	if err != nil {
+		return responseError(fmt.Sprintf("unable to save Volume(%s) state: %s", v.Name, err))
 	}
 
 	return volume.Response{}
@@ -170,7 +169,6 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 
 	return volume.Response{}
 }
-
 
 func (d *rbdDriver) Path(r volume.Request) volume.Response {
 	logrus.WithField("rbd-docker.go", "Path").Infof("Path Called %#v", r)
@@ -351,7 +349,6 @@ func (d *rbdDriver) List(r volume.Request) volume.Response {
 	return volume.Response{Volumes: vols}
 }
 
-
 func (d *rbdDriver) Capabilities(r volume.Request) volume.Response {
 	logrus.WithField("rbd-docker.go", "Capabilities").Infof("Capabilities Called %#v", r)
 
@@ -361,7 +358,6 @@ func (d *rbdDriver) Capabilities(r volume.Request) volume.Response {
 		},
 	}
 }
-
 
 func responseError(err string) volume.Response {
 	logrus.Error(err)

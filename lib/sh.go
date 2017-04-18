@@ -17,8 +17,6 @@ var (
 func sh(name string, args ...string) (string, error) {
 	cmd := exec.Command(name, args...)
 
-	logrus.WithField("sh.go", "sh").Debugf("sh: %q", cmd)
-
 	out, err := cmd.Output()
 	return strings.Trim(string(out), " \n"), err
 }

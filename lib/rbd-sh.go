@@ -93,9 +93,8 @@ func getImageMappingDevices(pool string, imageName string) (error, []string) {
 
 	for _, v := range mappings {
 
-		logrus.WithField("rbd-sh.go", "getMappings").Debugf("image(%s) found in pool(%s)", v["name"], v["pool"])
-
 		if v["pool"] == pool && v["name"] == imageName {
+			logrus.WithField("rbd-sh.go", "getMappings").Debugf("image(%s) found in pool(%s)", v["name"], v["pool"])
 			myImageMappings = append(myImageMappings, v["device"])
 		}
 	}
