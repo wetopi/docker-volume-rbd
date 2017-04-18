@@ -160,7 +160,7 @@ docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.1.3
 
 ## Troubleshooting
 
-#### Check your plugin is enabled:
+### Check your plugin is enabled:
 
 ```bash
 docker plugin ls
@@ -183,7 +183,7 @@ Exec an interactive shell:
 docker-runc exec -t fff19fa9a622885f5bcc30c0199046761825b037b25523540647b12ccf84403be bash
 ```
 
-#### Log your driver:
+### Log your driver:
 
 If this container is not running or restarting, then check your docker engine log i.e. 
 
@@ -194,12 +194,22 @@ or its equivalent
 `journalctl -f -u docker.service`
 
 
-#### Check Consul Key Value:
+### Check Consul Key Value:
 
 Check if state stored in Consul KV is consistent:
 
 ```bash
 curl -s curl http://localhost:8500/v1/kv/docker/volume/rbd/my_rbd_volume?raw
+```
+
+### Use curl to debug plugin socket issues.
+
+To verify if the plugin API socket that the docker daemon communicates with is responsive, use curl. In this example, we will make API calls from the docker host to volume and network plugins using curl to ensure that the plugin is listening on the said socket. For a well functioning plugin, these basic requests should work. Note that plugin sockets are available on the host under /var/run/docker/plugins/<pluginID>
+
+```bash
+curl -H "Content-Type: application/json" -XPOST -d '{}' --unix-socket /var/run/docker/plugins/546ac5b9043ce0f49552b14e9fb73dc78f1028d2da7e894ab599e6546566c0df/rbd.sock http:/VolumeDriver.List
+
+{"Mountpoint":"","Err":"","Volumes":[{"Name":"rbd_test","Mountpoint":"","Status":null},{"Name":"demo_test","Mountpoint":"/mnt/volumes/demo_test","Status":null}],"Volume":null,"Capabilities":{"Scope":""}}
 ```
 
 
