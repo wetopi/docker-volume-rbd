@@ -8,11 +8,12 @@ import (
 )
 
 const socketAddress = "/run/docker/plugins/rbd.sock"
-const dockerVolumeRbdVersion = "0.2.0"
 
 
 
 func main() {
+
+	dockerVolumeRbdVersion := os.Getenv("PLUGIN_VERSION")
 
 	logLevel := os.Getenv("LOG_LEVEL")
 

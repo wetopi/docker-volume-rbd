@@ -6,14 +6,84 @@
     ],
     "env": [
         {
+            "name": "PLUGIN_VERSION",
+            "Description": "Current version of RBD plugin for Docker Plugin",
+            "value": "0.2.3"
+        },
+        {
             "name": "LOG_LEVEL",
+            "Description": "[0:ErrorLevel; 1:WarnLevel; 2:InfoLevel; 3:DebugLevel] defaults to 0",
             "settable": [
                 "value"
             ],
             "value": "0"
         },
         {
-            "name": "CONSUL_ADDRESS",
+            "name": "CONSUL_HTTP_ADDR",
+            "Description": "HTTP API address to the local Consul agent. i.e. 127.0.0.1:8500 or as  Unix socket Unix://var/run/consul_http.sock",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "CONSUL_HTTP_TOKEN",
+            "Description": "API access token required when access control lists (ACLs) are enabled",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "CONSUL_HTTP_AUTH",
+            "Description": "HTTP Basic access credentials as a username:password pair",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "CONSUL_HTTP_SSL",
+            "Description": "boolean value (default is false) that enables the HTTPS URI scheme and SSL connections to the HTTP API  q",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "CONSUL_CACERT",
+            "Description": "Path to a CA file to use for TLS when communicating with Consul",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "CONSUL_CAPATH",
+            "Description": "Path to a directory of CA certificates to use for TLS when communicating with Consul.",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "CONSUL_CLIENT_CERT",
+            "Description": "Path to a client cert file to use for TLS when verify_incoming is enabled.",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "CONSUL_CLIENT_KEY",
+            "Description": "Path to a client key file to use for TLS when verify_incoming is enabled.",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "CONSUL_TLS_SERVER_NAME",
+            "Description": "The server name to use as the SNI host when connecting via TLS.",
+            "settable": [
+                "value"
+            ]
+        },
+        {
+            "name": "CONSUL_HTTP_SSL_VERIFY",
+            "Description": "This is a boolean value (default true) to specify SSL certificate verification.",
             "settable": [
                 "value"
             ]

@@ -4,14 +4,12 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/hashicorp/consul/api"
 	"encoding/json"
-	"os"
 )
 
 // TODO create a "state" interface and factory in order to use different state backends
 
 
 const KEY_PREFIX = "docker/volume/rbd/"
-const DEFAULT_CONSUL_ADDRESS = "localhost:8500"
 
 func (d *rbdDriver) setVolume(v *Volume) error {
 	logrus.WithField("consul.go", "setVolume").Debugf("%#v", v)
@@ -112,15 +110,14 @@ func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
 	return nil, &volumes
 }
 
+// This will pool and reuse idle connections to Consul
+//
+// All connection params are set using the Consul API env vars:
+// https://www.consul.io/docs/commands/#environment-variables
+//
 func getConnection() (error, *api.KV) {
 
 	config := api.DefaultConfig()
-
-	config.Address = os.Getenv("CONSUL_ADDRESS")
-
-	if (config.Address == "") {
-		config.Address = DEFAULT_CONSUL_ADDRESS
-	}
 
 	client, err := api.NewClient(config)
 	if err != nil {

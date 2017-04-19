@@ -24,7 +24,7 @@ Key value vars to pass when installing this plugin driver:
 ```conf
 LOG_LEVEL=[0:ErrorLevel; 1:WarnLevel; 2:InfoLevel; 3:DebugLevel] defaults to 0
 
-CONSUL_ADDRESS=localhost:8500
+CONSUL_HTTP_ADDR=127.0.0.1:8500
 
 RBD_CONF_MAP_DEVICE_ROOT="/dev/rbd"
 RBD_CONF_CLUSTER=ceph
@@ -48,10 +48,14 @@ RBD_CONF_MDS_SESSION_TIMEOUT=120
 RBD_CONF_MDS_SESSION_AUTOCLOSE=600
 ```
 
+Note: Consul connection params are set using the Consul env vars: https://www.consul.io/docs/commands/#environment-variables
+
+
 ### 2 - Install the plugin
 
 ```bash
 docker plugin install wetopi/rbd \
+  --alias=wetopi/rbd \
   LOG_LEVEL=1 \
   RBD_CONF_KEYRING_USER=client.admin \
   RBD_CONF_KEYRING_KEY="ASSDFGDFGSDGSDFGDSGDSFGSD=="
@@ -91,11 +95,10 @@ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd busybox sh
 
 #### 3.C - Run a container with an anonymous volume: 
 
-*NOTE: Docker 1.13.1 does not support volume opts on docker run or docker create*
-
 ```bash
 docker run -it -v $(docker volume create -d wetopi/rbd -o pool=rbd -o size=206):/data --volume-driver=wetopi/rbd -o pool=rbd -o size=206 busybox sh
 ```
+*NOTE: Docker 1.13.1 does not support volume opts on docker run or docker create*
 
 #### 3.D - Create a service with a previously created volume: 
 
