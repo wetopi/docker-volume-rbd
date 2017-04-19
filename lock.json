@@ -11,8 +11,8 @@
         },
         {
             "name": "github.com/Sirupsen/logrus",
-            "version": "v0.11.2",
-            "revision": "c078b1e43f58d563c74cebe63c85789e76ddb627",
+            "version": "v0.11.5",
+            "revision": "ba1b36c82c5e05c4f912a88eab0dcd91a171688f",
             "packages": [
                 "."
             ]
@@ -52,10 +52,42 @@
         },
         {
             "name": "github.com/hashicorp/consul",
-            "version": "v0.7.5",
-            "revision": "21f2d5ad0c02af6c4b32d8fd04f7c81e9b002d41",
+            "version": "v0.8.1",
+            "revision": "e9ca44d0a1757ac9aecc6785904a701936c10e4a",
             "packages": [
                 "api"
+            ]
+        },
+        {
+            "name": "github.com/hashicorp/go-cleanhttp",
+            "branch": "master",
+            "revision": "3573b8b52aa7b37b9358d966a898feb387f62437",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/hashicorp/go-rootcerts",
+            "branch": "master",
+            "revision": "6bb64b370b90e7ef1fa532be9e591a81c3493e00",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/hashicorp/serf",
+            "version": "v0.8.1",
+            "revision": "d6574a5bb1226678d7010325fb6c985db20ee458",
+            "packages": [
+                "coordinate"
+            ]
+        },
+        {
+            "name": "github.com/mitchellh/go-homedir",
+            "branch": "master",
+            "revision": "b8bc1bf767474819792c23f32d8286a45736f1c6",
+            "packages": [
+                "."
             ]
         },
         {
@@ -69,7 +101,7 @@
         {
             "name": "golang.org/x/net",
             "branch": "master",
-            "revision": "6b27048ae5e6ad1ef927e72e437531493de612fe",
+            "revision": "5602c733f70afc6dcec6766be0d5034d4c4f14de",
             "packages": [
                 "proxy"
             ]
@@ -77,7 +109,7 @@
         {
             "name": "golang.org/x/sys",
             "branch": "master",
-            "revision": "075e574b89e4c2d22f2286a7e2b919519c6f3547",
+            "revision": "f3918c30c5c2cb527c0b071a27c35120a6c0719a",
             "packages": [
                 "unix",
                 "windows"
