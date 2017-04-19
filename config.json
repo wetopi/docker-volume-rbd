@@ -8,6 +8,9 @@
         {
             "name": "PLUGIN_VERSION",
             "Description": "Current version of RBD plugin for Docker Plugin",
+            "settable": [
+                "value"
+            ],
             "value": "0.2.3"
         },
         {
