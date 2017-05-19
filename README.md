@@ -153,11 +153,11 @@ docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.1.3
 
 ## Known problems:
 
-1. **WHEN** node restart **THEN** rbd plugin breaks (modprobe: ERROR: could not insert 'rbd': Operation not permitted //rbd: failed to load rbd kernel module (1) // rbd: sysfs write failed // In some cases useful info is found in syslog - try "dmesg | tail" or so. // rbd: map failed: (2) No such file or directory
-  **SOLUTION** rbd map anyImage --pool yourPool **THEN** plugin works (host rbd can load a kernel module that plugin container can't?)
+1. **WHEN** node restart **THEN** rbd plugin breaks: `(modprobe: ERROR: could not insert 'rbd': Operation not permitted //rbd: failed to load rbd kernel module (1) // rbd: sysfs write failed // In some cases useful info is found in syslog - try "dmesg | tail" or so. // rbd: map failed: (2) No such file or directory`
+ **SOLUTION** load the module in your hosts: `modprobe rbd` **THEN** plugin works (our container plugin then finds its rbd module on kernel)
   
   
-2- **WHEN** docker plugin remove  + install **THEN** containers running in plugins node lost their volumes
+2. **WHEN** docker plugin remove  + install **THEN** containers running in plugins node lost their volumes
   **SOLUTION** restart node (swarm moves containers to another node + restart free up the Rbd mapped + mounted images) 
 
 
