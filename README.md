@@ -3,7 +3,7 @@
 Docker Engine managed plugin to for RBD volumes.
 
 This plugins is managed using Docker Engine plugin system.
-[https://github.com/docker/docker/blob/master/docs/extend/index.md](https://github.com/docker/docker/blob/master/docs/extend/index.md)
+[https://docs.docker.com/engine/extend/](https://docs.docker.com/engine/extend/)
 
 ## Requirements
 
@@ -28,24 +28,7 @@ CONSUL_HTTP_ADDR=127.0.0.1:8500
 
 RBD_CONF_MAP_DEVICE_ROOT="/dev/rbd"
 RBD_CONF_CLUSTER=ceph
-
 RBD_CONF_KEYRING_USER=client.admin
-RBD_CONF_KEYRING_KEY="ASSDFGDFGSDGSDFGDSGDSFGSD=="
-RBD_CONF_KEYRING_CAPS_MDS="allow *"
-RBD_CONF_KEYRING_CAPS_MON="allow *"
-RBD_CONF_KEYRING_CAPS_OSD="allow *"
-
-RBD_CONF_GLOBAL_FSID="56779a1a-2dc1-1122-a152-f21221233dsd"
-RBD_CONF_GLOBAL_MON_INITIAL_MEMBERS="ceph-mon1, ceph-mon2, ceph-mon3"
-RBD_CONF_GLOBAL_MON_HOST="192.168.101.1,192.168.101.2,192.168.101.3"
-RBD_CONF_GLOBAL_AUTH_CLUSTER_REQUIRED=cephx
-RBD_CONF_GLOBAL_AUTH_SERVICE_REQUIRED=cephx
-RBD_CONF_GLOBAL_AUTH_CLIENT_REQUIRED=cephx
-RBD_CONF_GLOBAL_OSD_POOL_DEFAULT_SIZE=2
-RBD_CONF_GLOBAL_PUBLIC_NETWORK="192.168.100.0/23"
-RBD_CONF_CLIENT_RBD_DEFAULT_FEATURES=1
-RBD_CONF_MDS_SESSION_TIMEOUT=120
-RBD_CONF_MDS_SESSION_AUTOCLOSE=600
 ```
 
 Note: Consul connection params are set using the Consul env vars: https://www.consul.io/docs/commands/#environment-variables

@@ -63,10 +63,10 @@ func (d *rbdDriver) connect(pool string) error {
 	if d.conf["cluster"] == "" {
 		cephConn, err = rados.NewConnWithUser(d.conf["keyring_user"])
 	} else {
-		cephConn, err = rados.NewConnWithClusterAndUser(d.conf["keyring_cluster"], d.conf["keyring_user"])
+		cephConn, err = rados.NewConnWithClusterAndUser(d.conf["cluster"], d.conf["keyring_user"])
 	}
 	if err != nil {
-		logrus.WithField("rbd-driver.go", "rbdDriver.connect").Errorf("unable to create ceph connection to cluster(%s) with user(%s): %s", d.conf["keyring_cluster"], d.conf["keyring_user"], err.Error())
+		logrus.WithField("rbd-driver.go", "rbdDriver.connect").Errorf("unable to create ceph connection to cluster(%s) with user(%s): %s", d.conf["cluster"], d.conf["keyring_user"], err.Error())
 		return err
 	}
 

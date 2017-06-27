@@ -22,6 +22,5 @@ RUN apt-get update \
 
 
 COPY docker-volume-rbd /
-COPY templates /templates
 
 CMD ["docker-volume-rbd"]

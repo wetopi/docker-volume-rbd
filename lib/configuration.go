@@ -2,8 +2,6 @@ package dockerVolumeRbd
 
 import (
 	"os"
-	"text/template"
-	"github.com/Sirupsen/logrus"
 	"strings"
 )
 
@@ -16,23 +14,11 @@ import (
 //
 func (d *rbdDriver) configure() error {
 
-	var err error
-
 	// set default confs:
 	d.conf["cluster"] = "ceph"
 	d.conf["device_map_root"] = "/dev/rbd"
 
 	d.loadEnvironmentRbdConfigVars();
-
-	err = createConf("templates/ceph.conf.tmpl", "/etc/ceph/ceph.conf", d.conf);
-	if err != nil {
-		return err
-	}
-
-	err = createConf("templates/ceph.keyring.tmpl", "/etc/ceph/ceph.keyring", d.conf);
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -51,30 +37,5 @@ func (d *rbdDriver) loadEnvironmentRbdConfigVars() {
 		}
 	}
 
-}
-
-func createConf(templateFile string, outputFile string, config map[string]string) error {
-
-	t, err := template.ParseFiles(templateFile)
-	if err != nil {
-		logrus.WithField("utils", "createConf").Error(err)
-		return err
-	}
-
-	f, err := os.Create(outputFile)
-	if err != nil {
-		logrus.WithField("utils", "createConf").Error(err)
-		return err
-	}
-
-	err = t.Execute(f, config)
-	if err != nil {
-		logrus.WithField("utils", "createConf").Error(err)
-		return err
-	}
-
-	f.Close()
-
-	return nil
 }
 

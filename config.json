@@ -11,7 +11,7 @@
             "settable": [
                 "value"
             ],
-            "value": "0.2.3"
+            "value": "0.3.0"
         },
         {
             "name": "LOG_LEVEL",
@@ -108,96 +108,6 @@
             "settable": [
                 "value"
             ]
-        },
-        {
-            "name": "RBD_CONF_KEYRING_KEY",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_KEYRING_CAPS_MDS",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_KEYRING_CAPS_MON",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_KEYRING_CAPS_OSD",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_GLOBAL_FSID",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_GLOBAL_MON_INITIAL_MEMBERS",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_GLOBAL_MON_HOST",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_GLOBAL_AUTH_CLUSTER_REQUIRED",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_GLOBAL_AUTH_SERVICE_REQUIRED",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_GLOBAL_AUTH_CLIENT_REQUIRED",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_GLOBAL_OSD_POOL_DEFAULT_SIZE",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_GLOBAL_PUBLIC_NETWORK",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_CLIENT_RBD_DEFAULT_FEATURES",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_MDS_SESSION_TIMEOUT",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_MDS_SESSION_AUTOCLOSE",
-            "settable": [
-                "value"
-            ]
         }
     ],
     "interface": {
@@ -225,6 +135,14 @@
         {
             "source": "/dev",
             "destination": "/dev",
+            "type": "bind",
+            "options": [
+                "rbind"
+            ]
+        },
+        {
+            "source": "/etc/ceph",
+            "destination": "/etc/ceph",
             "type": "bind",
             "options": [
                 "rbind"
