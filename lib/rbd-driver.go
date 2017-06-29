@@ -226,6 +226,7 @@ func (d *rbdDriver) mountRbdImage(pool string, imageName string, fstype string) 
 	// check for mountdir - create if necessary
 	err = os.MkdirAll(mountpoint, os.ModeDir | os.FileMode(int(0775)))
 	if err != nil {
+		defer d.freeUpRbdImage(pool, imageName, mountpoint)
 		return fmt.Errorf("unable to make mountpoint(%s): %s", mountpoint, err), "", ""
 	}
 
@@ -233,6 +234,7 @@ func (d *rbdDriver) mountRbdImage(pool string, imageName string, fstype string) 
 	// mount
 	err = d.mountDevice(device, fstype, mountpoint)
 	if err != nil {
+		defer d.freeUpRbdImage(pool, imageName, mountpoint)
 		return fmt.Errorf("unable to mount device(%s) to directory(%s): %s", device, mountpoint, err), "", ""
 	}
 
