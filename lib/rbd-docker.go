@@ -103,8 +103,10 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 		return responseError(fmt.Sprintf("unable to check for rbd image(%s): %s", v.Name, err))
 	}
 
-	if !exists {
-		// try to create it
+	if exists {
+		logrus.WithField("rbd-docker.go", "Create").Warnf("skipping image create. Ceph RBD Image(%s) exists.", v.Name)
+
+	} else {
 		err = d.createRbdImage(v.Pool, v.Name, v.Size, v.Order, v.Fstype)
 		if err != nil {
 			return responseError(fmt.Sprintf("unable to create Ceph RBD Image(%s): %s", v.Name, err))

@@ -135,7 +135,6 @@ func (d *rbdDriver) rbdImageExists(pool string, imageName string) (error, bool) 
 }
 
 
-// createRbdImage will create a new Ceph block device and make a filesystem on it
 func (d *rbdDriver) createRbdImage(pool string, imageName string, size uint64, order int, fstype string) error {
 	logrus.WithField("rbd-driver.go", "rbdDriver.createRbdImage").Infof("create image(%s) in pool(%s) with size(%dMB) and fstype(%s)", imageName, pool, size, fstype)
 
