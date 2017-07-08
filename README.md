@@ -131,7 +131,7 @@ docker plugin enable wetopi/rbd
 
 ```bash
 docker plugin disable -f wetopi/rbd:0.1.2
-docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.1.3 
+docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.3.3 
 ```
 
 ## Known problems:
@@ -207,6 +207,11 @@ You can build and publish the plugin with:
 make all
 ```
 
+### Vendor dependencies
+
+vendor dir is maintained using dep dependency tool: https://github.com/golang/dep
+
+More info: https://github.com/golang/dep/blob/master/FAQ.md
 
 ## THANKS
 
