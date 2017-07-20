@@ -12,7 +12,6 @@ import (
 const KEY_PREFIX = "docker/volume/rbd/"
 
 func (d *rbdDriver) setVolume(v *Volume) error {
-	logrus.WithField("consul.go", "setVolume").Debugf("%#v", v)
 
 	err, kv := getConnection()
 	if err != nil {
@@ -21,15 +20,15 @@ func (d *rbdDriver) setVolume(v *Volume) error {
 
 	data, err := json.Marshal(v)
 	if err != nil {
-		logrus.WithField("consul.go", "setVolume").Error(err)
 		return err
 	}
+
+	logrus.Debugf("volume-rbd Message=consul.setVolume(%s)", v.Name)
 
 	p := &api.KVPair{Key: getKeyFromName(v.Name), Value: data}
 	_, err = kv.Put(p, nil)
 	if err != nil {
-		logrus.WithField("consul.go", "setVolume").Error(err)
-		panic(err)
+		return err
 	}
 
 	return nil
@@ -37,7 +36,7 @@ func (d *rbdDriver) setVolume(v *Volume) error {
 }
 
 func (d *rbdDriver) deleteVolume(name string) (error) {
-	logrus.WithField("consul.go", "deleteVolume").Debugf("volume name: %s", name)
+	logrus.Debugf("volume-rbd Message=consul.deleteVolume(%s)", name)
 
 	err, kv := getConnection()
 	if err != nil {
@@ -46,7 +45,6 @@ func (d *rbdDriver) deleteVolume(name string) (error) {
 
 	_, err = kv.Delete(getKeyFromName(name), nil)
 	if err != nil {
-		logrus.WithField("consul.go", "deleteVolume").Error(err)
 		return err
 	}
 
@@ -54,7 +52,7 @@ func (d *rbdDriver) deleteVolume(name string) (error) {
 }
 
 func (d *rbdDriver) getVolume(name string) (error, *Volume) {
-	logrus.WithField("consul.go", "getVolume").Debugf("volume name: %s", name)
+	logrus.Debugf("volume-rbd Message=consul.getVolume(%s)", name)
 
 	err, kv := getConnection()
 	if err != nil {
@@ -63,7 +61,6 @@ func (d *rbdDriver) getVolume(name string) (error, *Volume) {
 
 	pair, _, err := kv.Get(getKeyFromName(name), nil)
 	if err != nil {
-		logrus.WithField("consul.go", "getVolume").Error(err)
 		return err, nil
 	}
 
@@ -71,7 +68,6 @@ func (d *rbdDriver) getVolume(name string) (error, *Volume) {
 
 	if (pair != nil) {
 		if err := json.Unmarshal(pair.Value, &v); err != nil {
-			logrus.WithField("consul.go", "getVolume").Error(err)
 			return err, nil
 		}
 	}
@@ -80,7 +76,7 @@ func (d *rbdDriver) getVolume(name string) (error, *Volume) {
 }
 
 func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
-	logrus.WithField("consul.go", "getVolumes").Debug("get list of volumes")
+	logrus.Debugf("volume-rbd Message=consul.getVolumes()")
 
 	err, kv := getConnection()
 	if err != nil {
@@ -89,7 +85,6 @@ func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
 
 	pairs, _, err := kv.List(getKeyFromName(""), nil)
 	if err != nil {
-		logrus.WithField("consul.go", "getVolumes").Error(err)
 		return err, nil
 	}
 
@@ -100,7 +95,6 @@ func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
 		v := Volume{}
 
 		if err := json.Unmarshal(pair.Value, &v); err != nil {
-			logrus.WithField("consul.go", "getVolumes").Error(err)
 			return err, nil
 		}
 
@@ -116,12 +110,12 @@ func (d *rbdDriver) getVolumes() (error, *map[string]*Volume) {
 // https://www.consul.io/docs/commands/#environment-variables
 //
 func getConnection() (error, *api.KV) {
+	logrus.Debugf("volume-rbd Message=consul.getConnection()")
 
 	config := api.DefaultConfig()
 
 	client, err := api.NewClient(config)
 	if err != nil {
-		logrus.WithField("consul.go", "getConnection").Error(err)
 		return err, nil
 	}
 

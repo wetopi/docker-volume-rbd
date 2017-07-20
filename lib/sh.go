@@ -36,7 +36,7 @@ func shWithTimeout(howLong time.Duration, name string, args ...string) (string, 
 	// set up the results channel
 	resultsChan := make(chan ShResult, 1)
 
-	logrus.WithField("sh.go", "shWithTimeout").Debugf("shWithTimeout: %v, %s, %v", howLong, name, args)
+	logrus.Debugf("volume-rbd Message=shWithTimeout(%v, %s, %v)", howLong, name, args)
 
 
 	// fire up the goroutine for the actual shell command

@@ -47,7 +47,7 @@ type Volume struct {
 //    Respond with a string error if an error occurred.
 //
 func (d *rbdDriver) Create(r volume.Request) volume.Response {
-	logrus.WithField("rbd-docker.go", "Create").Infof("Create Called %#v", r)
+	logrus.Infof("volume-rbd Name=%s Request=Create", r.Name)
 
 	d.Lock()
 	defer d.Unlock()
@@ -86,70 +86,69 @@ func (d *rbdDriver) Create(r volume.Request) volume.Response {
 	}
 
 	if v.Pool == "" {
-		return responseError("'pool' option required")
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Create Message=pool option required", r.Name))
 	}
 
 
-	// connect to ceph
 	err := d.connect(v.Pool)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to connect to ceph and access pool: %s", err))
-
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Create Message=unable to connect to ceph pool: %s", r.Name, err))
 	}
+
 	defer d.shutdown()
 
 	err, exists := d.rbdImageExists(v.Pool, v.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to check for rbd image(%s): %s", v.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Create Message=unable to check if rbd image exists: %s", r.Name, err))
 	}
 
 	if exists {
-		logrus.WithField("rbd-docker.go", "Create").Warnf("skipping image create. Ceph RBD Image(%s) exists.", v.Name)
+		logrus.Warnf("volume-rbd Name=%s Request=Create Message=skipping image create: ceph rbd image exists.", r.Name)
 
 	} else {
 		err = d.createRbdImage(v.Pool, v.Name, v.Size, v.Order, v.Fstype)
 		if err != nil {
-			return responseError(fmt.Sprintf("unable to create Ceph RBD Image(%s): %s", v.Name, err))
+			return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Create Message=unable to create ceph rbd image: %s", v.Name, err))
 		}
 	}
 
 	err = d.setVolume(v)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to save Volume(%s) state: %s", v.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Create Message=unable to save volume state: %s", v.Name, err))
 	}
 
 	return volume.Response{}
 }
 
 func (d *rbdDriver) Remove(r volume.Request) volume.Response {
-	logrus.WithField("rbd-docker.go", "Remove").Infof("Remove Called %#v", r)
+	logrus.Infof("volume-rbd Name=%s Request=Create", r.Name)
 
 	d.Lock()
 	defer d.Unlock()
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Remove Message=unable to get volume state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
-		return responseError(fmt.Sprintf("volume %s not found", r.Name))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Remove Message=volume state not found", r.Name))
 	}
 
-	// connect to Ceph and check ceph rbd api for it
 	err = d.connect(v.Pool)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to connect to ceph and access Pool: %s", err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Remove Message=unable to connect to ceph pool: %s", r.Name, err))
 	}
+
 	defer d.shutdown()
 
 	err, exists := d.rbdImageExists(v.Pool, v.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to check for rbd image: %s", err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Remove Message=unable to check if rbd image exists: %s", r.Name, err))
 	}
 
 	if !exists {
-		logrus.WithField("rbd-docker.go", "Remove").Warnf("rbd image not found: %s", v.Name)
+		logrus.Infof("volume-rbd Name=%s Request=Remove Message=skipping image remove: unexisting ceph rbd image.", r.Name)
 
 	} else {
 
@@ -160,31 +159,31 @@ func (d *rbdDriver) Remove(r volume.Request) volume.Response {
 
 		err = d.removeRbdImageWithRetries(v.Name)
 		if err != nil {
-			return responseError(fmt.Sprintf("unable to remove rbd image(%s): %s", v.Name, err))
+			return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Remove Message=unable to remove rbd image: %s", r.Name, err))
 		}
 	}
 
 	err = d.deleteVolume(v.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to deleteVolume(%s) state: %s", v.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Remove Message=unable to delete volume state: %s", v.Name, err))
 	}
 
 	return volume.Response{}
 }
 
 func (d *rbdDriver) Path(r volume.Request) volume.Response {
-	logrus.WithField("rbd-docker.go", "Path").Infof("Path Called %#v", r)
+	logrus.Infof("volume-rbd Name=%s Request=Path", r.Name)
 
 	d.RLock()
 	defer d.RUnlock()
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Path Message=unable to get volume state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
-		return responseError(fmt.Sprintf("volume %s not found", r.Name))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Path Message=volume state not found", r.Name))
 	}
 
 	return volume.Response{Mountpoint: v.Mountpoint}
@@ -207,7 +206,7 @@ func (d *rbdDriver) Path(r volume.Request) volume.Response {
 //    made available, and/or a string error if an error occurred.
 //
 func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
-	logrus.WithField("rbd-docker.go", "Mount").Infof("Mount Called %#v", r)
+	logrus.Infof("volume-rbd Name=%s Request=Mount", r.Name)
 
 	var err error
 
@@ -216,25 +215,25 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Mount Message=unable to get volume state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
-		return responseError(fmt.Sprintf("volume %s not found", r.Name))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Mount Message=volume state not found", r.Name))
 	}
 
 	if v.Mountpoint != "" {
-		logrus.WithField("rbd-docker.go", "Mount").Warnf("this volume(%s) has a previous registered mountpoint(%s)", v.Name, v.Mountpoint)
+		logrus.Warnf("volume-rbd Name=%s Request=Mount Message=this volume has a previous registered mountpoint(%s)", v.Name, v.Mountpoint)
 	}
 
 	err, v.Device, v.Mountpoint = d.mountRbdImage(v.Pool, v.Name, v.Fstype)
 	if err != nil {
-		return responseError(err.Error())
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Mount Message=unable to mount rbd image: %s", v.Name, err))
 	}
 
 	d.setVolume(v)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to setVolume(%s) state: %s", v.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Mount Message=unable to set volume state: %s", v.Name, err))
 	}
 
 	return volume.Response{Mountpoint: v.Mountpoint}
@@ -254,7 +253,7 @@ func (d *rbdDriver) Mount(r volume.MountRequest) volume.Response {
 //    Respond with a string error if an error occurred.
 //
 func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
-	logrus.WithField("rbd-docker.go", "Unmount").Infof("Unmount Called %#v", r)
+	logrus.Infof("volume-rbd Name=%s Request=Unmount", r.Name)
 
 	var err error
 
@@ -263,11 +262,11 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Unmount Message=unable to get volume state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
-		return responseError(fmt.Sprintf("volume %s not found", r.Name))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Unmount Message=volume state not found", r.Name))
 	}
 
 	err = d.freeUpRbdImage(v.Pool, v.Name, v.Mountpoint)
@@ -279,7 +278,7 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 	v.Mountpoint = ""
 	d.setVolume(v)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to setVolume(%s) state: %s", v.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Unmount Message=unable to set volume state: %s", v.Name, err))
 	}
 
 	return volume.Response{}
@@ -301,18 +300,18 @@ func (d *rbdDriver) Unmount(r volume.UnmountRequest) volume.Response {
 //    and/or a string error if an error occurred.
 //
 func (d *rbdDriver) Get(r volume.Request) volume.Response {
-	logrus.WithField("rbd-docker.go", "Get").Infof("Get Called %#v", r)
+	logrus.Infof("volume-rbd Name=%s Request=Get", r.Name)
 
 	d.Lock()
 	defer d.Unlock()
 
 	err, v := d.getVolume(r.Name)
 	if err != nil {
-		return responseError(fmt.Sprintf("unable to getVolume(%s) state: %s", r.Name, err))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Get Message=unable to get volume state: %s", r.Name, err))
 	}
 
 	if v.Name == "" {
-		return responseError(fmt.Sprintf("volume(%s) not found", r.Name))
+		return responseError(fmt.Sprintf("volume-rbd Name=%s Request=Get Message=volume state not found", r.Name))
 	}
 
 	return volume.Response{Volume: &volume.Volume{Name: r.Name, Mountpoint: v.Mountpoint}}
@@ -334,14 +333,14 @@ func (d *rbdDriver) Get(r volume.Request) volume.Response {
 //    made available).
 //
 func (d *rbdDriver) List(r volume.Request) volume.Response {
-	logrus.WithField("rbd-docker.go", "List").Infof("List Called %#v", r)
+	logrus.Infof("volume-rbd Request=List")
 
 	d.Lock()
 	defer d.Unlock()
 
 	err, volumes := d.getVolumes()
 	if err != nil {
-		return responseError(fmt.Sprintf("getting volumes state give us error: %s", err))
+		return responseError(fmt.Sprintf("volume-rbd Request=List Message=getting volumes state give us error: %s", err))
 	}
 
 	var vols []*volume.Volume
@@ -352,7 +351,7 @@ func (d *rbdDriver) List(r volume.Request) volume.Response {
 }
 
 func (d *rbdDriver) Capabilities(r volume.Request) volume.Response {
-	logrus.WithField("rbd-docker.go", "Capabilities").Infof("Capabilities Called %#v", r)
+	logrus.Infof("volume-rbd Request=Capabilities")
 
 	return volume.Response{
 		Capabilities: volume.Capability{

@@ -11,7 +11,7 @@
             "settable": [
                 "value"
             ],
-            "value": "0.3.2"
+            "value": "0.3.3"
         },
         {
             "name": "LOG_LEVEL",

@@ -17,7 +17,7 @@ import (
 
 // mapImage will map the RBD Image to a kernel device
 func (d *rbdDriver) mapImage(pool string, imageName string) (string, error) {
-	logrus.WithField("rbd-sh.go", "rbdDriver.mapImage").Infof("map image(%s) in pool(%s)", imageName, pool)
+	logrus.Debugf("volume-rbd Name=%s Message=map image in pool(%s)", imageName, pool)
 
 	device, err := d.rbdsh(pool, "map", imageName)
 	// NOTE: ubuntu rbd map seems to not return device. if no error, assume "default" /dev/rbd/<pool>/<image> device
@@ -29,18 +29,18 @@ func (d *rbdDriver) mapImage(pool string, imageName string) (string, error) {
 }
 
 // unmapImageDevice will release the mapped kernel device
-func (d *rbdDriver) unmapImageDevice(device string) error {
-	logrus.WithField("rbd-sh.go", "rbdDriver.unmapImageDevice").Infof("unmap device(%s)", device)
+func (d *rbdDriver) unmapImageDevice(device string, imageName string) error {
+	logrus.Debugf("volume-rbd Name=%s Message=rbd unmap %s", imageName, device)
 
 	_, err := d.rbdsh("", "unmap", device)
 
 	if err != nil {
-		logrus.WithField("rbd-sh.go", "unmapImageDevice").Errorf("rbd unmap %s: %s", device, err.Error())
+		logrus.Errorf("volume-rbd Name=%s Message=rbd unmap %s: %s", imageName, device, err.Error())
 
 		// NOTE: rbd unmap exits 16 if device is still being used - unlike umount.  try to recover differently in that case
 		if rbdUnmapBusyRegexp.MatchString(err.Error()) {
 			// can't always re-mount and not sure if we should here ... will be cleaned up once original container goes away
-			logrus.WithField("rbd-sh.go", "unmapImageDevice").Errorf("unmap failed due to busy device, early exit from this Unmount request")
+			logrus.Errorf("volume-rbd Name=%s Message=rbd unmap %s: unmap failed due to busy device", imageName, device)
 			return err
 		}
 
@@ -51,14 +51,14 @@ func (d *rbdDriver) unmapImageDevice(device string) error {
 }
 
 func (d *rbdDriver) mountDevice(device string, fstype, mountpoint string) error {
-	logrus.WithField("rbd-sh.go", "rbdDriver.mountDevice").Infof("mount device(%s) in mountpoint(%s)", device, mountpoint)
+	logrus.Debugf("volume-rbd Message=mount -t %s %s %s", fstype, device, mountpoint)
 
 	_, err := shWithDefaultTimeout("mount", "-t", fstype, device, mountpoint)
 	return err
 }
 
 func (d *rbdDriver) unmountDevice(device string) error {
-	logrus.WithField("rbd-sh.go", "rbdDriver.unmountDevice").Infof("umount device(%s)", device)
+	logrus.Debugf("volume-rbd Message=umount device(%s) in mountpoint(%s)", device)
 	_, err := shWithDefaultTimeout("umount", device)
 	return err
 }
@@ -71,7 +71,7 @@ We do not want to relay on what driver state knows about mappings
 its safer to ask rbd
  */
 func getImageMappingDevices(pool string, imageName string) (error, []string) {
-	logrus.WithField("rbd-sh.go", "getMappings").Infof("get a list of image(%s) mappings in pool(%s)", imageName, pool)
+	logrus.Debugf("volume-rbd Name=%s Message=rbd showmapped", imageName)
 
 	mappingsJson, err := shWithDefaultTimeout("rbd", "showmapped", "--format", "json")
 
