@@ -131,7 +131,7 @@ docker plugin enable wetopi/rbd
 
 ```bash
 docker plugin disable -f wetopi/rbd:0.1.2
-docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.3.3 
+docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.3.4 
 ```
 
 ## Known problems:
