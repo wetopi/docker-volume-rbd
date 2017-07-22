@@ -2,6 +2,7 @@ package dockerVolumeRbd
 
 import (
 	"github.com/Sirupsen/logrus"
+	"golang.org/x/sys/unix"
 	"path/filepath"
 	"encoding/json"
 )
@@ -53,7 +54,8 @@ func (d *rbdDriver) unmapImageDevice(device string, imageName string) error {
 func (d *rbdDriver) mountDevice(device string, fstype, mountpoint string) error {
 	logrus.Debugf("volume-rbd Message=mount -t %s %s %s", fstype, device, mountpoint)
 
-	_, err := shWithDefaultTimeout("mount", "-t", fstype, device, mountpoint)
+	err := unix.Mount(device, mountpoint, fstype, 0, "")
+
 	return err
 }
 
