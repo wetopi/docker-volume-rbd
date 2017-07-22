@@ -59,9 +59,11 @@ func (d *rbdDriver) mountDevice(device string, fstype, mountpoint string) error 
 	return err
 }
 
-func (d *rbdDriver) unmountDevice(device string) error {
-	logrus.Debugf("volume-rbd Message=umount device(%s) in mountpoint(%s)", device)
-	_, err := shWithDefaultTimeout("umount", device)
+func (d *rbdDriver) unmountDevice(device string, mountpoint string) error {
+	logrus.Debugf("volume-rbd Message=umount device(%s) in mountpoint(%s)", device, mountpoint)
+
+	err := unix.Unmount(mountpoint, 0)
+
 	return err
 }
 
