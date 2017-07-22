@@ -115,8 +115,8 @@ Update setting [Optional]:
 ```bash
 docker plugin set wetopi/rbd \
   LOG_LEVEL=2 \
-  RBD_CONF_KEYRING_USER=client.admin \
-  ...
+  CONSUL_HTTP_ADDR=consul.service.wetopi.priv:8500 \
+  RBD_CONF_KEYRING_USER=client.admin
 ```
 
 Enable the plugin:

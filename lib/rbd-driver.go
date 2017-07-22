@@ -257,7 +257,7 @@ func (d *rbdDriver) freeUpRbdImage(pool string, imageName string, mountpoint str
 	for _, device := range devices {
 
 		// silently unmount
-		err := d.unmountDevice(device)
+		err := d.unmountDevice(device, mountpoint)
 		if err != nil {
 			// warn and continue. unmap knows if device is being used
 			logrus.Warnf("volume-rbd Name=%s Message=unable to unmount image device(%s):", imageName, device, err)
