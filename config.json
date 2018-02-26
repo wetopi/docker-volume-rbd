@@ -119,7 +119,8 @@
     "linux": {
         "AllowAllDevices": true,
         "capabilities": [
-            "CAP_SYS_ADMIN"
+            "CAP_SYS_ADMIN",
+            "CAP_SYS_MODULE"
         ],
         "devices": null
     },
