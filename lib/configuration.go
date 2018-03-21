@@ -7,12 +7,8 @@ import (
 
 
 
-// Configure Ceph
-// get conf files
-// create the ceph.conf
-// and the ceph.keyring used to authenticate with cephx
-//
-func (d *rbdDriver) configure() error {
+// Read
+func (d *rbdDriver) configure() {
 
 	// set default confs:
 	d.conf["cluster"] = "ceph"
@@ -20,7 +16,6 @@ func (d *rbdDriver) configure() error {
 
 	d.loadEnvironmentRbdConfigVars();
 
-	return nil
 }
 
 

@@ -43,10 +43,7 @@ func NewDriver() (error, *rbdDriver) {
 		conf: make(map[string]string),
 	}
 
-	err := driver.configure()
-	if err != nil {
-		return err, nil
-	}
+	driver.configure()
 
 	return nil, driver
 }
@@ -114,6 +111,7 @@ func (d *rbdDriver) shutdown() {
 	}
 }
 
+
 func (d *rbdDriver) rbdImageExists(pool string, imageName string) (error, bool) {
 	logrus.Debugf("volume-rbd Name=%s Message=checking if exists rbd image in pool(%s)", imageName, pool)
 
@@ -175,6 +173,7 @@ func (d *rbdDriver) createRbdImage(pool string, imageName string, size uint64, o
 	return nil
 }
 
+
 func (d *rbdDriver) removeRbdImage(imageName string) error {
 	logrus.Debugf("volume-rbd Name=%s Message=remove rbd image", imageName)
 
@@ -206,6 +205,7 @@ func (d *rbdDriver) removeRbdImageWithRetries(imageName string) error {
 
 	return err
 }
+
 
 func (d *rbdDriver) mountRbdImage(pool string, imageName string, fstype string) (err error, device string, mountpoint string) {
 	logrus.Debugf("volume-rbd Name=%s Message=map and mount rbd image", imageName)

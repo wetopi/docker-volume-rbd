@@ -1,8 +1,30 @@
-FROM ubuntu:16.04
+FROM golang:1.10 as builder
 
 MAINTAINER Joan Vega <joan@wetopi.com>
 
-ENV CEPH_VERSION jewel
+COPY . /go/src/github.com/wetopi/docker-volume-rbd
+WORKDIR /go/src/github.com/wetopi/docker-volume-rbd
+
+RUN apt-get update \
+    && apt-get install -y -q \
+       gcc libc-dev \
+       librados-dev \
+       librbd-dev \
+       \
+    && set -ex \
+    && go get -u github.com/golang/dep/cmd/dep \
+    && dep ensure \
+    && go install
+
+CMD ["/go/bin/docker-volume-rbd"]
+
+
+
+
+
+FROM ubuntu:16.04
+
+ENV CEPH_VERSION luminous
 
 RUN apt-get update \
     && apt-get install -y -q \
@@ -19,8 +41,5 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/*
 
-
-
-COPY docker-volume-rbd /
-
+COPY --from=builder /go/bin/docker-volume-rbd .
 CMD ["docker-volume-rbd"]

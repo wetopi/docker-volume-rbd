@@ -11,7 +11,7 @@
             "settable": [
                 "value"
             ],
-            "value": "0.3.4"
+            "value": "1.0.0"
         },
         {
             "name": "LOG_LEVEL",
@@ -92,7 +92,7 @@
             ]
         },
         {
-            "name": "RBD_CONF_MAP_DEVICE_ROOT",
+            "name": "RBD_CONF_DEVICE_MAP_ROOT",
             "settable": [
                 "value"
             ]

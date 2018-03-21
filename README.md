@@ -26,7 +26,7 @@ LOG_LEVEL=[0:ErrorLevel; 1:WarnLevel; 2:InfoLevel; 3:DebugLevel] defaults to 0
 
 CONSUL_HTTP_ADDR=127.0.0.1:8500
 
-RBD_CONF_MAP_DEVICE_ROOT="/dev/rbd"
+RBD_CONF_DEVICE_MAP_ROOT="/dev/rbd"
 RBD_CONF_CLUSTER=ceph
 RBD_CONF_KEYRING_USER=client.admin
 ```
@@ -40,8 +40,8 @@ Note: Consul connection params are set using the Consul env vars: https://www.co
 docker plugin install wetopi/rbd \
   --alias=wetopi/rbd \
   LOG_LEVEL=1 \
-  RBD_CONF_KEYRING_USER=client.admin \
-  RBD_CONF_KEYRING_KEY="ASSDFGDFGSDGSDFGDSGDSFGSD=="
+  RBD_CONF_CLUSTER=ceph \
+  RBD_CONF_KEYRING_USER=client.admin
 ```
 
 ### 3 - Create and use a volume
@@ -131,7 +131,7 @@ docker plugin enable wetopi/rbd
 
 ```bash
 docker plugin disable -f wetopi/rbd:0.1.2
-docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.3.4 
+docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:1.0.0 
 ```
 
 ## Known problems:
@@ -212,6 +212,11 @@ make all
 vendor dir is maintained using dep dependency tool: https://github.com/golang/dep
 
 More info: https://github.com/golang/dep/blob/master/FAQ.md
+
+#### Update dependencies
+
+
+More info: https://golang.github.io/dep/docs/daily-dep.html
 
 ## THANKS
 

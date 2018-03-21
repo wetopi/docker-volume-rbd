@@ -4,49 +4,50 @@
 [[projects]]
   name = "github.com/Microsoft/go-winio"
   packages = ["."]
-  revision = "f533f7a102197536779ea3a8cb881d639e21ec5a"
-  version = "v0.4.2"
+  revision = "7da180ee92d8bd8bb8c37fc560e673e6557c392f"
+  version = "v0.4.7"
 
 [[projects]]
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
-  revision = "202f25545ea4cf9b191ff7f846df5d87c9382c2b"
-  version = "v1.0.0"
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
 
 [[projects]]
   branch = "master"
   name = "github.com/ceph/go-ceph"
   packages = ["rados","rbd"]
-  revision = "25b1a318b3872325bccb2cd2afad001c11b9bf4f"
+  revision = "bd5bc6d4cb3e3d3441f2ec4e9f89899178edfc71"
 
 [[projects]]
   name = "github.com/coreos/go-systemd"
   packages = ["activation"]
-  revision = "48702e0da86bd25e76cfef347e2adeb434a0d0a6"
-  version = "v14"
+  revision = "40e2722dffead74698ca12a750f64ef313ddce05"
+  version = "v16"
 
 [[projects]]
   name = "github.com/docker/go-connections"
   packages = ["sockets"]
   revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
+  version = "v0.3.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/docker/go-plugins-helpers"
   packages = ["sdk","volume"]
-  revision = "abb3e589c0322ddc019c2ec5f587ea0df2024869"
+  revision = "61cb8e2334204460162c8bd2417cd43cb71da66f"
 
 [[projects]]
   name = "github.com/hashicorp/consul"
   packages = ["api"]
-  revision = "2c7715154d8d4568524b76d2d4deb7ca6fd1b285"
-  version = "v0.8.5"
+  revision = "9a494b5fb9c86180a5702e29c485df1507a47198"
+  version = "v1.0.6"
 
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/go-cleanhttp"
   packages = ["."]
-  revision = "3573b8b52aa7b37b9358d966a898feb387f62437"
+  revision = "d5fe4b57a186c716b0e00b8c301cbd9b4182694d"
 
 [[projects]]
   branch = "master"
@@ -68,19 +69,25 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "c3a3ad6d03f7a915c0f7e194b7152974bb73d287"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = ["proxy"]
-  revision = "054b33e6527139ad5b1ec2f6232c3b175bd9a30c"
+  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix","windows"]
-  revision = "739734461d1c916b6c72a63d7efda2b27edb369f"
+  revision = "7ceb54c8418b8f9cdf0177b511d5cbb06e9fae39"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a4637fa8cd99a7f0a8e1432ec25569b1402de4d6416f504363a4a0cff286b5e9"
+  inputs-digest = "c2ea72e47579e08cb1ecd6079b12699014b0aff957fa82b0b9bf654ee43456cd"
   solver-name = "gps-cdcl"
   solver-version = 1
