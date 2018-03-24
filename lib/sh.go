@@ -1,7 +1,6 @@
 package dockerVolumeRbd
 
 import (
-	"github.com/Sirupsen/logrus"
 	"time"
 	"os/exec"
 	"strings"
@@ -35,9 +34,6 @@ func shWithTimeout(howLong time.Duration, name string, args ...string) (string, 
 
 	// set up the results channel
 	resultsChan := make(chan ShResult, 1)
-
-	logrus.Debugf("volume-rbd Message=shWithTimeout(%v, %s, %v)", howLong, name, args)
-
 
 	// fire up the goroutine for the actual shell command
 	go func() {

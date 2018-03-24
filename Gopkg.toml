@@ -23,8 +23,4 @@
 
 [[constraint]]
   name = "github.com/Sirupsen/logrus"
-  version = "1.0.0"
-
-[[override]]
-  name = "github.com/docker/go-connections"
-  revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
+  version = "1.0.5"

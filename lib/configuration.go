@@ -7,20 +7,16 @@ import (
 
 
 
-// Configure Ceph
-// get conf files
-// create the ceph.conf
-// and the ceph.keyring used to authenticate with cephx
-//
-func (d *rbdDriver) configure() error {
+// Read
+func (d *rbdDriver) configure() {
 
 	// set default confs:
+	d.conf["pool"] = "ssd"
 	d.conf["cluster"] = "ceph"
 	d.conf["device_map_root"] = "/dev/rbd"
 
 	d.loadEnvironmentRbdConfigVars();
 
-	return nil
 }
 
 

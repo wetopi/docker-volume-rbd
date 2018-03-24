@@ -9,11 +9,6 @@ This plugins is managed using Docker Engine plugin system.
 
 1. Docker >=1.13.1 (recommended)
 2. Ceph cluster
-3. Consul. We need a KV store to persist state. 
-
-## Why an external KV store?
-
-Plugin runs on its own container 
 
 ## Using this volume driver
 
@@ -24,14 +19,11 @@ Key value vars to pass when installing this plugin driver:
 ```conf
 LOG_LEVEL=[0:ErrorLevel; 1:WarnLevel; 2:InfoLevel; 3:DebugLevel] defaults to 0
 
-CONSUL_HTTP_ADDR=127.0.0.1:8500
-
-RBD_CONF_MAP_DEVICE_ROOT="/dev/rbd"
+RBD_CONF_DEVICE_MAP_ROOT="/dev/rbd"
+RBD_CONF_POOL="ssd"
 RBD_CONF_CLUSTER=ceph
 RBD_CONF_KEYRING_USER=client.admin
 ```
-
-Note: Consul connection params are set using the Consul env vars: https://www.consul.io/docs/commands/#environment-variables
 
 
 ### 2 - Install the plugin
@@ -40,8 +32,9 @@ Note: Consul connection params are set using the Consul env vars: https://www.co
 docker plugin install wetopi/rbd \
   --alias=wetopi/rbd \
   LOG_LEVEL=1 \
-  RBD_CONF_KEYRING_USER=client.admin \
-  RBD_CONF_KEYRING_KEY="ASSDFGDFGSDGSDFGDSGDSFGSD=="
+  RBD_CONF_POOL="ssd" \
+  RBD_CONF_CLUSTER=ceph \
+  RBD_CONF_KEYRING_USER=client.admin
 ```
 
 ### 3 - Create and use a volume
@@ -49,7 +42,6 @@ docker plugin install wetopi/rbd \
 #### Available volume driver options:
 
 ```conf
-pool: required
 fstype: optional, defauls to ext4
 size: optional, defaults to 512 (512MB)
 order: optional, defaults to 22 (4KB Objects)
@@ -60,7 +52,7 @@ order: optional, defaults to 22 (4KB Objects)
 [https://docs.docker.com/engine/reference/commandline/volume_create/](https://docs.docker.com/engine/reference/commandline/volume_create/)
 
 ```sh
-docker volume create -d wetopi/rbd -o pool=rbd -o size=206 my_rbd_volume
+docker volume create -d wetopi/rbd -o size=206 my_rbd_volume
 
 docker volume ls
 DRIVER              VOLUME NAME
@@ -79,7 +71,7 @@ docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd busybox sh
 #### 3.C - Run a container with an anonymous volume: 
 
 ```bash
-docker run -it -v $(docker volume create -d wetopi/rbd -o pool=rbd -o size=206):/data --volume-driver=wetopi/rbd -o pool=rbd -o size=206 busybox sh
+docker run -it -v $(docker volume create -d wetopi/rbd -o size=206):/data --volume-driver=wetopi/rbd -o size=206 busybox sh
 ```
 *NOTE: Docker 1.13.1 does not support volume opts on docker run or docker create*
 
@@ -96,7 +88,7 @@ docker run -it -v $(docker volume create -d wetopi/rbd -o pool=rbd -o size=206):
 ```bash
  docker service create --replicas=1 \
    -e MYSQL_ROOT_PASSWORD=my-secret-pw \
-   --mount type=volume,destination=/var/lib/mysql,volume-driver=wetopi/rbd,volume-opt=pool=rbd,volume-opt=size=512 \
+   --mount type=volume,destination=/var/lib/mysql,volume-driver=wetopi/rbd,volume-opt=size=512 \
    mariadb:latest
 ```
 
@@ -115,7 +107,7 @@ Update setting [Optional]:
 ```bash
 docker plugin set wetopi/rbd \
   LOG_LEVEL=2 \
-  CONSUL_HTTP_ADDR=consul.service.wetopi.priv:8500 \
+  RBD_CONF_POOL="ssd" \
   RBD_CONF_KEYRING_USER=client.admin
 ```
 
@@ -131,7 +123,7 @@ docker plugin enable wetopi/rbd
 
 ```bash
 docker plugin disable -f wetopi/rbd:0.1.2
-docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:0.3.4 
+docker plugin upgrade wetopi/rbd:0.1.2 wetopi/rbd:1.0.0 
 ```
 
 ## Known problems:
@@ -180,14 +172,6 @@ or its equivalent
 `journalctl -f -u docker.service`
 
 
-### Check Consul Key Value:
-
-Check if state stored in Consul KV is consistent:
-
-```bash
-curl -s curl http://localhost:8500/v1/kv/docker/volume/rbd/my_rbd_volume?raw
-```
-
 ### Use curl to debug plugin socket issues.
 
 To verify if the plugin API socket that the docker daemon communicates with is responsive, use curl. In this example, we will make API calls from the docker host to volume and network plugins using curl to ensure that the plugin is listening on the said socket. For a well functioning plugin, these basic requests should work. Note that plugin sockets are available on the host under /var/run/docker/plugins/<pluginID>
@@ -212,6 +196,11 @@ make all
 vendor dir is maintained using dep dependency tool: https://github.com/golang/dep
 
 More info: https://github.com/golang/dep/blob/master/FAQ.md
+
+#### Update dependencies
+
+
+More info: https://golang.github.io/dep/docs/daily-dep.html
 
 ## THANKS
 
