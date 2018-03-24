@@ -188,7 +188,7 @@ curl -H "Content-Type: application/json" -XPOST -d '{}' --unix-socket /var/run/d
 
 ## Changelog
 
-v1.0.0
+### v1.0.0
 New:
 - Removed Consul dependency: consul is no more needed. This new release gathers state asking rbd.
 - RBD advisory locks thanks to rbd state watchers. A volume mount returns error if it has a watcher. Now it is not possible for a client to attach a volume that is already attached to another node.
@@ -197,7 +197,7 @@ Incompatible backwards changes:
 - Rbd pool: is a plugin config param. (changed in order to avoid the need to persist state of volumes).
 - Rbd pool: is no more an option during volume create.
 - POST /VolumeDriver.Create gives err if volume exists.
-- POST /VolumeDriver.Mount gives err if volume hs watchers.
+- POST /VolumeDriver.Mount gives err if volume has watchers.
 
 ## Developing
 
