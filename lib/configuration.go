@@ -11,6 +11,7 @@ import (
 func (d *rbdDriver) configure() {
 
 	// set default confs:
+	d.conf["pool"] = "ssd"
 	d.conf["cluster"] = "ceph"
 	d.conf["device_map_root"] = "/dev/rbd"
 
