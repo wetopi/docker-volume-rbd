@@ -10,11 +10,15 @@ This plugins is managed using Docker Engine plugin system.
 1. Docker >=1.13.1 (recommended)
 2. Ceph cluster
 
+## Why another docker rbd plugin?
+
+1. Docker v2 plugin
+2. No external service dependencies other than Ceph.
+3. Lock control. Volumes can not be mounted by error on multiple nodes. 
+
 ## Using this volume driver
 
-### 1 - Available driver options
-
-Key value vars to pass when installing this plugin driver:
+### 1 - Driver config options
 
 ```conf
 LOG_LEVEL=[0:ErrorLevel; 1:WarnLevel; 2:InfoLevel; 3:DebugLevel] defaults to 0
@@ -182,6 +186,18 @@ curl -H "Content-Type: application/json" -XPOST -d '{}' --unix-socket /var/run/d
 {"Mountpoint":"","Err":"","Volumes":[{"Name":"rbd_test","Mountpoint":"","Status":null},{"Name":"demo_test","Mountpoint":"/mnt/volumes/demo_test","Status":null}],"Volume":null,"Capabilities":{"Scope":""}}
 ```
 
+## Changelog
+
+v1.0.0
+New:
+- Removed Consul dependency: consul is no more needed. This new release gathers state asking rbd.
+- RBD advisory locks thanks to rbd state watchers. A volume mount returns error if it has a watcher. Now it is not possible for a client to attach a volume that is already attached to another node.
+
+Incompatible backwards changes:
+- Rbd pool: is a plugin config param. (changed in order to avoid the need to persist state of volumes).
+- Rbd pool: is no more an option during volume create.
+- POST /VolumeDriver.Create gives err if volume exists.
+- POST /VolumeDriver.Mount gives err if volume hs watchers.
 
 ## Developing
 
