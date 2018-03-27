@@ -72,8 +72,8 @@ func (d *rbdDriver) Create(r *volume.CreateRequest) error {
 func (d *rbdDriver) List() (*volume.ListResponse, error) {
 	logrus.Infof("volume-rbd Request=List")
 
-	d.RLock()
-	defer d.RUnlock()
+	d.Lock()
+	defer d.Unlock()
 
 
 	err := d.Connect()
@@ -99,8 +99,8 @@ func (d *rbdDriver) List() (*volume.ListResponse, error) {
 func (d *rbdDriver) Get(r *volume.GetRequest) (*volume.GetResponse, error) {
 	logrus.Infof("volume-rbd Name=%s Request=Get", r.Name)
 
-	d.RLock()
-	defer d.RUnlock()
+	d.Lock()
+	defer d.Unlock()
 
 	err := d.Connect()
 	if err != nil {
@@ -159,8 +159,8 @@ func (d *rbdDriver) Remove(r *volume.RemoveRequest) error {
 func (d *rbdDriver) Path(r *volume.PathRequest) (*volume.PathResponse, error) {
 	logrus.Infof("volume-rbd Name=%s Request=Path", r.Name)
 
-	d.RLock()
-	defer d.RUnlock()
+	d.Lock()
+	defer d.Unlock()
 
 	err := d.Connect()
 	if err != nil {
@@ -184,11 +184,10 @@ func (d *rbdDriver) Path(r *volume.PathRequest) (*volume.PathResponse, error) {
 func (d *rbdDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, error) {
 	logrus.Infof("volume-rbd Name=%s Request=Mount", r.Name)
 
-	var err error
-
 	d.Lock()
 	defer d.Unlock()
 
+	var err error
 
 	if r.Name == "" {
 		return &volume.MountResponse{}, fmt.Errorf("volume-rbd Name=%s Request=Mount Message=volume state not found", r.Name)
