@@ -27,6 +27,8 @@ create:
 push:
 	@echo "### push plugin ${PLUGIN_NAME}:${PLUGIN_VERSION}"
 	@docker plugin push ${PLUGIN_NAME}:${PLUGIN_VERSION}
+	@echo "### push plugin ${PLUGIN_NAME}:latest"
+	@docker plugin push ${PLUGIN_NAME}:latest
 
 enable:
 	@echo "### enable plugin ${PLUGIN_NAME}:${PLUGIN_VERSION}"
