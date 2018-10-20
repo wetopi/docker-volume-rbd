@@ -37,16 +37,16 @@ func (d *rbdDriver) unmapImage(imageName string) error {
 }
 
 
-func (d *rbdDriver) mountImage(imageName string) error {
+func (d *rbdDriver) mountImage(imageName string, mountOptions string) error {
 
     device := d.getTheDevice(imageName)
     mountpoint := d.GetMountPointPath(imageName)
 
-	logrus.Debugf("volume-rbd Name=%s Message=mount %s %s", imageName, device, mountpoint)
+	logrus.Debugf("volume-rbd Name=%s Message=mount %s %s %s", imageName, mountOptions, device, mountpoint)
 
 	// err := unix.Mount(device, mountpoint, "auto", 0, "")
     // note unix.Mount does not work with our aliased device, we user the sh version.
-    _, err := shWithDefaultTimeout("mount", device, mountpoint)
+    _, err := shWithDefaultTimeout("mount", mountOptions, device, mountpoint)
 
     return err
 }

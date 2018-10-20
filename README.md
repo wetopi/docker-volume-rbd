@@ -14,7 +14,6 @@ This plugins is managed using Docker Engine plugin system.
 
 1. Docker v2 plugin
 2. No external service dependencies other than Ceph.
-3. Lock control. Volumes can not be mounted by error on multiple nodes. 
 
 ## Using this volume driver
 
@@ -27,8 +26,10 @@ RBD_CONF_DEVICE_MAP_ROOT="/dev/rbd"
 RBD_CONF_POOL="ssd"
 RBD_CONF_CLUSTER=ceph
 RBD_CONF_KEYRING_USER=client.admin
-```
 
+Mount options defaults to "--options=noatime" (extended syntax with no spaces)
+MOUNT_OPTIONS="--options=noatime"
+```
 
 ### 2 - Install the plugin
 
@@ -47,11 +48,13 @@ docker plugin install wetopi/rbd \
 
 ```conf
 fstype: optional, defauls to ext4
+mkfsOptions: optional, defaults to '-O mmp' (Multiple Mount Protection)
+mountOptions: optional, defaults to '-o noatime'
 size: optional, defaults to 512 (512MB)
 order: optional, defaults to 22 (4KB Objects)
 ```
 
-#### 3.A - Create a volume: 
+#### 3.A - Create a volume:
 
 [https://docs.docker.com/engine/reference/commandline/volume_create/](https://docs.docker.com/engine/reference/commandline/volume_create/)
 
@@ -66,20 +69,20 @@ local               2d1f2a8fac147b7e7a6b95ca227eba2ff859325210c7280ccb73fd5beda6
 wetopi/rbd          my_rbd_volume
 ```
 
-#### 3.B - Run a container with a previously created volume: 
+#### 3.B - Run a container with a previously created volume:
 
 ```bash
 docker run -it -v my_rbd_volume:/data --volume-driver=wetopi/rbd busybox sh
 ```
 
-#### 3.C - Run a container with an anonymous volume: 
+#### 3.C - Run a container with an anonymous volume:
 
 ```bash
 docker run -it -v $(docker volume create -d wetopi/rbd -o size=206):/data --volume-driver=wetopi/rbd -o size=206 busybox sh
 ```
 *NOTE: Docker 1.13.1 does not support volume opts on docker run or docker create*
 
-#### 3.D - Create a service with a previously created volume: 
+#### 3.D - Create a service with a previously created volume:
 
 ```bash
  docker service create --replicas=1 \
@@ -87,7 +90,7 @@ docker run -it -v $(docker volume create -d wetopi/rbd -o size=206):/data --volu
    mariadb:latest
 ```
 
-#### 3.E - Create a service with an anonymous volume: 
+#### 3.E - Create a service with an anonymous volume:
 
 ```bash
  docker service create --replicas=1 \
@@ -103,8 +106,8 @@ docker run -it -v $(docker volume create -d wetopi/rbd -o size=206):/data --volu
 
 
 ```bash
-docker plugin disable -f wetopi/rbd 
-docker plugin upgrade wetopi/rbd 
+docker plugin disable -f wetopi/rbd
+docker plugin upgrade wetopi/rbd
 ```
 
 Update setting [Optional]:
@@ -117,15 +120,15 @@ docker plugin set wetopi/rbd \
 
 Enable the plugin:
 ```bash
-docker plugin enable wetopi/rbd 
+docker plugin enable wetopi/rbd
 ```
 
 
 
 ## Known problems:
-   
+
 1. **WHEN** docker plugin remove  + install **THEN** containers running in plugins node lost their volumes
-  **SOLUTION** restart node (swarm moves containers to another node + restart free up the Rbd mapped + mounted images) 
+  **SOLUTION** restart node (swarm moves containers to another node + restart free up the Rbd mapped + mounted images)
 
 
 ## Troubleshooting
@@ -155,11 +158,11 @@ docker-runc exec -t fff19fa9a622885f5bcc30c0199046761825b037b25523540647b12ccf84
 
 ### Log your driver:
 
-If this container is not running or restarting, then check your docker engine log i.e. 
+If this container is not running or restarting, then check your docker engine log i.e.
 
-`tail -f /var/log/upstart/docker` 
+`tail -f /var/log/upstart/docker`
 
-or its equivalent 
+or its equivalent
 
 `journalctl -f -u docker.service`
 
@@ -175,6 +178,19 @@ curl -H "Content-Type: application/json" -XPOST -d '{}' --unix-socket /var/run/d
 ```
 
 ## Changelog
+
+
+### v2.0.0
+new: mkfs now with options: mkfsOptions with default "-O mmp"
+new: mount now with options: default mountOptions "-o noatime"
+mod: rbd watchers do not stop the image mount.
+
+No more volume lock control neded:
+With the introduction of ext4 "Multiple Mount Protection" we can deal with the multi mounts in a more rational way (https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout#Multiple_Mount_Protection).
+The usage of Watchers carries complex corner cases i.e. when after a crash ceph takes too much time blacklist osd nodes.
+
+### v1.0.1
+
 
 ### v1.0.0
 New:

@@ -16,6 +16,7 @@ func (d *rbdDriver) Create(r *volume.CreateRequest) error {
 
     var err error
 	var fstype string = "ext4"
+	var mkfsOptions string = "-O mmp"
 	var size  uint64 =  512 // 512MB
 	var order int = 22 // 4KB Objects
 
@@ -35,6 +36,9 @@ func (d *rbdDriver) Create(r *volume.CreateRequest) error {
 
 		case "fstype":
 			fstype = val
+
+		case "mkfsOptions":
+			mkfsOptions = val
 
 		case "pool":
 		    // ignored ... backward compatibility
@@ -60,7 +64,7 @@ func (d *rbdDriver) Create(r *volume.CreateRequest) error {
 		return fmt.Errorf("volume-rbd Name=%s Request=Create Message=skipping image create: ceph rbd image exists.", r.Name)
     }
 
-    err = d.CreateRbdImage(r.Name, size, order, fstype)
+    err = d.CreateRbdImage(r.Name, size, order, fstype, mkfsOptions)
     if err != nil {
         return fmt.Errorf("volume-rbd Name=%s Request=Create Message=unable to create ceph rbd image: %s", r.Name, err)
     }
@@ -143,7 +147,7 @@ func (d *rbdDriver) Remove(r *volume.RemoveRequest) error {
 
         err = d.FreeUpRbdImage(r.Name)
         if err != nil {
-            return fmt.Errorf("volume-rbd Name=%s Request=Remove Message=unable to free uo rbd image: %s", r.Name, err)
+            return fmt.Errorf("volume-rbd Name=%s Request=Remove Message=unable to free up rbd image: %s", r.Name, err)
         }
 
         err = d.RemoveRbdImageWithRetries(r.Name)

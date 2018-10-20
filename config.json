@@ -1,102 +1,110 @@
 {
-    "description": "RBD plugin for Docker",
-    "documentation": "https://github.com/wetopi/docker-volume-rbd",
-    "entrypoint": [
-        "/docker-volume-rbd"
-    ],
-    "env": [
-        {
-            "name": "PLUGIN_VERSION",
-            "Description": "Current version of RBD plugin for Docker Plugin",
-            "settable": [
-                "value"
-            ],
-            "value": "1.0.1"
-        },
-        {
-            "name": "LOG_LEVEL",
-            "Description": "[0:ErrorLevel; 1:WarnLevel; 2:InfoLevel; 3:DebugLevel] defaults to 0",
-            "settable": [
-                "value"
-            ],
-            "value": "0"
-        },
-        {
-            "name": "RBD_CONF_DEVICE_MAP_ROOT",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_POOL",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_CLUSTER",
-            "settable": [
-                "value"
-            ]
-        },
-        {
-            "name": "RBD_CONF_KEYRING_USER",
-            "settable": [
-                "value"
-            ]
-        }
-    ],
-    "interface": {
-        "socket": "rbd.sock",
-        "types": [
-            "docker.volumedriver/1.0"
-        ]
+  "description": "RBD plugin for Docker",
+  "documentation": "https://github.com/wetopi/docker-volume-rbd",
+  "entrypoint": [
+    "/docker-volume-rbd"
+  ],
+  "env": [
+    {
+      "name": "PLUGIN_VERSION",
+      "Description": "Current version of RBD plugin for Docker Plugin",
+      "settable": [
+        "value"
+      ],
+      "value": "2.0.0"
     },
-    "linux": {
-        "AllowAllDevices": true,
-        "capabilities": [
-            "CAP_SYS_ADMIN",
-            "CAP_SYS_MODULE"
-        ],
-        "devices": null
+    {
+      "name": "LOG_LEVEL",
+      "Description": "[0:ErrorLevel; 1:WarnLevel; 2:InfoLevel; 3:DebugLevel] defaults to 0",
+      "settable": [
+        "value"
+      ],
+      "value": "0"
     },
-    "mounts": [
-        {
-            "source": "/lib/modules",
-            "destination": "/lib/modules",
-            "type": "bind",
-            "options": [
-                "rbind"
-            ]
-        },
-        {
-            "source": "/dev",
-            "destination": "/dev",
-            "type": "bind",
-            "options": [
-                "shared",
-                "rbind"
-            ]
-        },
-        {
-            "source": "/etc/ceph",
-            "destination": "/etc/ceph",
-            "type": "bind",
-            "options": [
-                "rbind"
-            ]
-        },
-        {
-            "source": "/sys",
-            "destination": "/sys",
-            "type": "bind",
-            "options": [
-                "rbind"
-            ]
-        }
+    {
+      "name": "RBD_CONF_DEVICE_MAP_ROOT",
+      "settable": [
+        "value"
+      ]
+    },
+    {
+      "name": "RBD_CONF_POOL",
+      "settable": [
+        "value"
+      ]
+    },
+    {
+      "name": "RBD_CONF_CLUSTER",
+      "settable": [
+        "value"
+      ]
+    },
+    {
+      "name": "RBD_CONF_KEYRING_USER",
+      "settable": [
+        "value"
+      ]
+    },
+    {
+      "name": "MOUNT_OPTIONS",
+      "Description": "Options to pass to the mount command",
+      "settable": [
+        "value"
+      ],
+      "value": "--options=noatime"
+    }
+  ],
+  "interface": {
+    "socket": "rbd.sock",
+    "types": [
+      "docker.volumedriver/1.0"
+    ]
+  },
+  "linux": {
+    "AllowAllDevices": true,
+    "capabilities": [
+      "CAP_SYS_ADMIN",
+      "CAP_SYS_MODULE"
     ],
-    "network": {
-        "type": "host"
+    "devices": null
+  },
+  "mounts": [
+    {
+      "source": "/lib/modules",
+      "destination": "/lib/modules",
+      "type": "bind",
+      "options": [
+        "rbind"
+      ]
     },
-    "propagatedmount": "/mnt/volumes"
+    {
+      "source": "/dev",
+      "destination": "/dev",
+      "type": "bind",
+      "options": [
+        "shared",
+        "rbind"
+      ]
+    },
+    {
+      "source": "/etc/ceph",
+      "destination": "/etc/ceph",
+      "type": "bind",
+      "options": [
+        "rbind"
+      ]
+    },
+    {
+      "source": "/sys",
+      "destination": "/sys",
+      "type": "bind",
+      "options": [
+        "rbind"
+      ]
+    }
+  ],
+  "network": {
+    "type": "host"
+  },
+  "propagatedmount": "/mnt/volumes"
 }

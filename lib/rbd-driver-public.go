@@ -131,7 +131,7 @@ func (d *rbdDriver) GetRbdImages() (err error, imageNames []string) {
 }
 
 
-func (d *rbdDriver) CreateRbdImage(imageName string, size uint64, order int, fstype string) error {
+func (d *rbdDriver) CreateRbdImage(imageName string, size uint64, order int, fstype string, mkfsOptions string) error {
 	logrus.Debugf("volume-rbd Name=%s Message=create image in pool(%s) with size(%dMB) and fstype(%s)", imageName, d.conf["pool"], size, fstype)
 
 	// check that fs is valid type (needs mkfs.fstype in PATH)
@@ -158,7 +158,7 @@ func (d *rbdDriver) CreateRbdImage(imageName string, size uint64, order int, fst
 
 	// make the filesystem (give it some time)
 	device := d.getTheDevice(imageName)
-	_, err = shWithTimeout(5 * time.Minute, mkfs, device)
+	_, err = shWithTimeout(5 * time.Minute, mkfs, mkfsOptions, device)
 	if err != nil {
 		d.unmapImage(imageName)
 		defer d.removeRbdImage(imageName)
@@ -199,7 +199,7 @@ func (d *rbdDriver) MountRbdImage(imageName string) (err error, mountpoint strin
 
     err = d.errIfRbdImageHasWatchers(imageName)
 	if err != nil {
-		return err, ""
+        logrus.Warnf("volume-rbd Name=%s Message=MountRbdImage image has watchers:", imageName, err)
 	}
 
 
@@ -220,7 +220,8 @@ func (d *rbdDriver) MountRbdImage(imageName string) (err error, mountpoint strin
 
 
 	// mount
-	err = d.mountImage(imageName)
+	mountOptions := os.Getenv("MOUNT_OPTIONS")
+	err = d.mountImage(imageName, mountOptions)
 	if err != nil {
 		defer d.FreeUpRbdImage(imageName)
 		return fmt.Errorf("unable to mount: %s", err), ""

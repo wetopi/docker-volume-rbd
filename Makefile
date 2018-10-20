@@ -1,5 +1,5 @@
 PLUGIN_NAME=wetopi/rbd
-PLUGIN_VERSION=1.0.1
+PLUGIN_VERSION=2.0.0
 
 all: clean rootfs create
 
@@ -21,8 +21,12 @@ rootfs:
 create:
 	@echo "### remove existing plugin ${PLUGIN_NAME}:${PLUGIN_VERSION} if exists"
 	@docker plugin rm -f ${PLUGIN_NAME}:${PLUGIN_VERSION} || true
+	@echo "### remove existing plugin ${PLUGIN_NAME}:latest if exists"
+	@docker plugin rm -f ${PLUGIN_NAME}:latest || true
 	@echo "### create new plugin ${PLUGIN_NAME}:${PLUGIN_VERSION} from ./plugin"
 	@docker plugin create ${PLUGIN_NAME}:${PLUGIN_VERSION} ./plugin
+	@echo "### create new plugin ${PLUGIN_NAME}:latest from ./plugin"
+	@docker plugin create ${PLUGIN_NAME}:latest ./plugin
 
 push:
 	@echo "### push plugin ${PLUGIN_NAME}:${PLUGIN_VERSION}"
