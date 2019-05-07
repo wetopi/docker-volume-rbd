@@ -90,7 +90,7 @@ func (d *rbdDriver) removeRbdImage(imageName string) error {
 // rbdsh will call rbd with the given command arguments, also adding config, user and pool flags
 func (d *rbdDriver) rbdsh(command string, args ...string) (string, error) {
 
-	args = append([]string{"--pool", d.conf["pool"], "--name", d.conf["keyring_user"], command}, args...)
+	args = append([]string{"--cluster", d.conf["cluster"], "--pool", d.conf["pool"], "--name", d.conf["keyring_user"], command}, args...)
 
 	return shWithDefaultTimeout("rbd", args...)
 }
