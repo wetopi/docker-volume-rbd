@@ -49,7 +49,7 @@ docker plugin install wetopi/rbd \
 ```conf
 fstype: optional, defauls to ext4
 mkfsOptions: optional, defaults to '-O mmp' (Multiple Mount Protection)
-mountOptions: optional, defaults to '-o noatime'
+mountOptions: optional, defaults to '--options=noatime'
 size: optional, defaults to 512 (512MB)
 order: optional, defaults to 22 (4KB Objects)
 ```
@@ -179,10 +179,13 @@ curl -H "Content-Type: application/json" -XPOST -d '{}' --unix-socket /var/run/d
 
 ## Changelog
 
+### v2.0.1
+fix: pass the cluster name to rbd invocations
+
 
 ### v2.0.0
 new: mkfs now with options: mkfsOptions with default "-O mmp"
-new: mount now with options: default mountOptions "-o noatime"
+new: mount now with options: default mountOptions "--options=noatime"
 mod: rbd watchers do not stop the image mount.
 
 No more volume lock control neded:
