@@ -1,5 +1,4 @@
-// DEPRECATED !!!!
-FROM golang:1.8
+FROM golang:1.14
 
 MAINTAINER Joan Vega <joan@wetopi.com>
 
@@ -9,12 +8,7 @@ RUN apt-get update \
        librados-dev \
        librbd-dev
 
-COPY . /go/src/github.com/wetopi/docker-volume-rbd
-WORKDIR /go/src/github.com/wetopi/docker-volume-rbd
-
-RUN set -ex
 RUN go get -u github.com/golang/dep/cmd/dep
-RUN dep ensure
-RUN go install
 
-CMD ["/go/bin/docker-volume-rbd"]
+VOLUME ["/go/src/github.com/wetopi/docker-volume-rbd"]
+WORKDIR /go/src/github.com/wetopi/docker-volume-rbd

@@ -1,4 +1,4 @@
-FROM golang:1.10 as builder
+FROM golang:1.14 as builder
 
 MAINTAINER Joan Vega <joan@wetopi.com>
 
@@ -22,9 +22,9 @@ CMD ["/go/bin/docker-volume-rbd"]
 
 
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
-ENV CEPH_VERSION luminous
+ENV CEPH_VERSION nautilus
 
 RUN apt-get update \
     && apt-get install -y -q \
