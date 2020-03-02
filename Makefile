@@ -3,12 +3,14 @@ PLUGIN_VERSION=2.0.1
 
 all: clean rootfs create
 
+.PHONY: clean
 clean:
 	@echo "### rm ./plugin"
 	@rm -rf ./plugin
 	@echo "### rm ./vendor"
 	@rm -rf ./vendor
 
+.PHONY: rootfs
 rootfs:
 	@echo "### docker build: rootfs image with docker-volume-rbd"
 	@docker build -q -t ${PLUGIN_NAME}:rootfs .
@@ -20,6 +22,7 @@ rootfs:
 	@cp config.json ./plugin/
 	@docker rm -vf tmp
 
+.PHONY: create
 create:
 	@echo "### remove existing plugin ${PLUGIN_NAME}:${PLUGIN_VERSION} if exists"
 	@docker plugin rm -f ${PLUGIN_NAME}:${PLUGIN_VERSION} || true
@@ -30,16 +33,19 @@ create:
 	@echo "### create new plugin ${PLUGIN_NAME}:latest from ./plugin"
 	@docker plugin create ${PLUGIN_NAME}:latest ./plugin
 
+.PHONY: push
 push:
 	@echo "### push plugin ${PLUGIN_NAME}:${PLUGIN_VERSION}"
 	@docker plugin push ${PLUGIN_NAME}:${PLUGIN_VERSION}
 	@echo "### push plugin ${PLUGIN_NAME}:latest"
 	@docker plugin push ${PLUGIN_NAME}:latest
 
+.PHONY: enable
 enable:
 	@echo "### enable plugin ${PLUGIN_NAME}:${PLUGIN_VERSION}"
 	@docker plugin enable ${PLUGIN_NAME}:${PLUGIN_VERSION}
 
+.PHONY: upgrade
 upgrade:
 	@echo "### disable plugin ${PLUGIN_NAME}"
 	@docker plugin disable -f ${PLUGIN_NAME}
@@ -47,3 +53,10 @@ upgrade:
 	@docker plugin upgrade ${PLUGIN_NAME} ${PLUGIN_NAME}:${PLUGIN_VERSION}
 	@echo "### enable plugin ${PLUGIN_NAME}"
 	@docker plugin enable ${PLUGIN_NAME}
+
+.PHONY: dev
+dev:
+	@echo "### docker build: dev image with golang deps"
+	@docker build -q -t ${PLUGIN_NAME}:dev --target go-builder .
+	@echo "### launching interactive shell"
+	@docker run --rm -it -v ${PWD}:/go/src/github.com/wetopi/docker-volume-rbd ${PLUGIN_NAME}:dev bash
