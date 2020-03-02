@@ -6,6 +6,8 @@ all: clean rootfs create
 clean:
 	@echo "### rm ./plugin"
 	@rm -rf ./plugin
+	@echo "### rm ./vendor"
+	@rm -rf ./vendor
 
 rootfs:
 	@echo "### docker build: rootfs image with docker-volume-rbd"
