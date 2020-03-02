@@ -2,61 +2,102 @@
 
 
 [[projects]]
+  digest = "1:f030e7f47bc39a29dd9ce41eaac2997bff088c4a34b38109ca6c3bc350c910f6"
   name = "github.com/Microsoft/go-winio"
-  packages = ["."]
-  revision = "7da180ee92d8bd8bb8c37fc560e673e6557c392f"
-  version = "v0.4.7"
+  packages = [
+    ".",
+    "pkg/guid",
+  ]
+  pruneopts = ""
+  revision = "6c72808b55902eae4c5943626030429ff20f3b63"
+  version = "v0.4.14"
 
 [[projects]]
+  digest = "1:1a405cddcf3368445051fb70ab465ae99da56ad7be8d8ca7fc52159d1c2d873c"
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
+  pruneopts = ""
+  revision = "839c75faf7f98a33d445d181f3018b5c3409a45e"
+  version = "v1.4.2"
 
 [[projects]]
-  branch = "master"
+  digest = "1:11728e4ba29cecacbed642b62587e5732fb74e352b50a116e7119498b5cb3585"
   name = "github.com/ceph/go-ceph"
-  packages = ["rados","rbd"]
-  revision = "bd5bc6d4cb3e3d3441f2ec4e9f89899178edfc71"
+  packages = [
+    "errutil",
+    "rados",
+    "rbd",
+  ]
+  pruneopts = ""
+  revision = "dc289754c8976f8cca2eb47dbea81895a4cac872"
+  version = "v0.2.0"
 
 [[projects]]
+  digest = "1:4a178cc984da91772ff98dd078699e7707a221986bf8342379567148e1e6d1b6"
   name = "github.com/coreos/go-systemd"
   packages = ["activation"]
-  revision = "40e2722dffead74698ca12a750f64ef313ddce05"
-  version = "v16"
+  pruneopts = ""
+  revision = "2d78030078ef61b3cae27f42ad6d0e46db51b339"
+  version = "v22.0.0"
 
 [[projects]]
+  digest = "1:ebe593d8b65a2947b78b6e164a2dac1a230b977a700b694da3a398b03b7afb04"
   name = "github.com/docker/go-connections"
   packages = ["sockets"]
+  pruneopts = ""
   revision = "7395e3f8aa162843a74ed6d48e79627d9792ac55"
+  version = "v0.4.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:72bd04e39b89ee367f0ce479d897672d598861e67ca1896e1666a3d5d19bde76"
   name = "github.com/docker/go-plugins-helpers"
-  packages = ["sdk","volume"]
-  revision = "61cb8e2334204460162c8bd2417cd43cb71da66f"
+  packages = [
+    "sdk",
+    "volume",
+  ]
+  pruneopts = ""
+  revision = "c9a8a2d92ccca898008b580693c4a688963575b1"
+
+[[projects]]
+  digest = "1:0f51cee70b0d254dbc93c22666ea2abf211af81c1701a96d04e2284b408621db"
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  pruneopts = ""
+  revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
+  version = "v1.0.2"
 
 [[projects]]
   branch = "master"
-  name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
-  revision = "88942b9c40a4c9d203b82b3731787b672d6e809b"
-
-[[projects]]
-  branch = "master"
+  digest = "1:9ac4dae84a6c14d4d0458d27a8c46fca553cfba156fe0c87f99c50d22034c7e3"
   name = "golang.org/x/net"
-  packages = ["proxy"]
-  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
+  packages = [
+    "internal/socks",
+    "proxy",
+  ]
+  pruneopts = ""
+  revision = "244492dfa37ae2ce87222fd06250a03160745faa"
 
 [[projects]]
   branch = "master"
+  digest = "1:d7d983fd8850aa2312ec3e963aa2710cc1adef5ded6dfdf7d4d8130c216a9430"
   name = "golang.org/x/sys"
-  packages = ["unix","windows"]
-  revision = "91ee8cde435411ca3f1cd365e8f20131aed4d0a1"
+  packages = [
+    "unix",
+    "windows",
+  ]
+  pruneopts = ""
+  revision = "5c8b2ff67527cb88b770f693cebf3799036d8bc0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9117dbd9aa5cf354e76ed15b8edbc2a04afe30f7da123f643688d7f87bc5528b"
+  input-imports = [
+    "github.com/Sirupsen/logrus",
+    "github.com/ceph/go-ceph/rados",
+    "github.com/ceph/go-ceph/rbd",
+    "github.com/docker/go-plugins-helpers/volume",
+    "golang.org/x/sys/unix",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
