@@ -1,5 +1,5 @@
 PLUGIN_NAME=wetopi/rbd
-PLUGIN_VERSION=2.0.1
+PLUGIN_VERSION=3.0.0
 
 all: clean rootfs create
 

@@ -179,6 +179,12 @@ curl -H "Content-Type: application/json" -XPOST -d '{}' --unix-socket /var/run/d
 
 ## Changelog
 
+### v3.0.0
+new: Support for Ceph Nautilus
+
+Ceph 14.x, Nautilus, has many new features but notably some differences in its configuration format due to the v2 Messenger interface. This adds support for Ceph Nautilus, mostly by updating Golang dependencies but also by ensuring more recent Ceph binaries are included in the container.
+This also cleans up the Dockerfile(s) a bit to make this easier to update in the future.
+
 ### v2.0.1
 fix: pass the cluster name to rbd invocations
 
