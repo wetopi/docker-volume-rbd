@@ -85,6 +85,10 @@ func (d *rbdDriver) Connect() error {
 	}
 
 	d.ioctx = ioctx
+	// Setup the namespace for the volumes we are working on
+	// default is ""  as it is the name 'internal' name for image without namespace
+	// Calling ioctx.SetNamespace("") is basically a noop
+	ioctx.SetNamespace(d.conf["namespace"])
 
 	return nil
 }
