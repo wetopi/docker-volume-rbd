@@ -12,7 +12,7 @@ import (
 func (d *rbdDriver) mapImage(imageName string) error {
 	logrus.Debugf("volume-rbd Name=%s Message=rbd map", imageName)
 
-	_, err := d.rbdsh("map", imageName)
+	_, err := d.rbdsh("map", filepath.Join(d.conf["pool"], d.conf["namespace"], imageName))
 
 	return err
 }
@@ -21,7 +21,7 @@ func (d *rbdDriver) mapImage(imageName string) error {
 func (d *rbdDriver) unmapImage(imageName string) error {
 	logrus.Debugf("volume-rbd Name=%s Message=rbd unmap", imageName)
 
-	_, err := d.rbdsh("unmap", imageName)
+	_, err := d.rbdsh("unmap", filepath.Join(d.conf["pool"], d.conf["namespace"], imageName))
 
 	if err != nil {
 		// NOTE: rbd unmap exits 16 if device is still being used - unlike umount.  try to recover differently in that case

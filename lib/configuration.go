@@ -14,6 +14,7 @@ func (d *rbdDriver) configure() {
 	d.conf["pool"] = "ssd"
 	d.conf["cluster"] = "ceph"
 	d.conf["device_map_root"] = "/dev/rbd"
+	d.conf["namespace"] = ""
 
 	d.loadEnvironmentRbdConfigVars();
 
