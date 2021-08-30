@@ -179,6 +179,10 @@ curl -H "Content-Type: application/json" -XPOST -d '{}' --unix-socket /var/run/d
 
 ## Changelog
 
+### v3.0.1
+mod: Added CAP_NET_ADMIN to capabilities to let the driver create volumes in Ubuntu 20.04.2 and new kernels.
+
+
 ### v3.0.0
 new: Support for Ceph Nautilus
 

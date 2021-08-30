@@ -11,7 +11,7 @@
       "settable": [
         "value"
       ],
-      "value": "3.0.0"
+      "value": "3.0.1"
     },
     {
       "name": "LOG_LEVEL",
@@ -63,6 +63,7 @@
   "linux": {
     "AllowAllDevices": true,
     "capabilities": [
+      "CAP_NET_ADMIN",
       "CAP_SYS_ADMIN",
       "CAP_SYS_MODULE"
     ],
