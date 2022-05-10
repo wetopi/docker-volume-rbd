@@ -1,9 +1,9 @@
-FROM ubuntu:18.04 as base
+FROM ubuntu:22.04 as base
 
 MAINTAINER Joan Vega <joan@wetopi.com>
 
-ENV GO_VERSION 1.14
-ENV CEPH_VERSION nautilus
+ENV GO_VERSION 1.16
+ENV CEPH_VERSION pacific
 
 RUN apt-get update && apt-get install -yq software-properties-common wget \
     && wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add - \
@@ -33,9 +33,9 @@ COPY lib /go/src/github.com/wetopi/docker-volume-rbd/lib
 
 WORKDIR /go/src/github.com/wetopi/docker-volume-rbd
 
-RUN set -ex && go get -u github.com/golang/dep/cmd/dep \
-    && dep ensure \
-    && go install
+RUN set -ex  \add-apt-repository ppa:longsleep/golang-backports
+ && go mod tidy \
+ && go install
 
 
 FROM base

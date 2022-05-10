@@ -226,9 +226,8 @@ make all
 
 ### Vendor dependencies
 
-vendor dir is maintained using dep dependency tool: https://github.com/golang/dep
+vendor dir is maintained using go mod
 
-More info: https://github.com/golang/dep/blob/master/FAQ.md
 
 #### Update dependencies
 
