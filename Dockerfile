@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as base
+FROM ubuntu:20.04 as base
 
 MAINTAINER Joan Vega <joan@wetopi.com>
 
@@ -28,12 +28,12 @@ ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 ENV PATH /usr/lib/go-$GO_VERSION/bin:$PATH
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
-COPY Gopkg.* main.go /go/src/github.com/wetopi/docker-volume-rbd/
+COPY go.* main.go /go/src/github.com/wetopi/docker-volume-rbd/
 COPY lib /go/src/github.com/wetopi/docker-volume-rbd/lib
 
 WORKDIR /go/src/github.com/wetopi/docker-volume-rbd
 
-RUN set -ex  \add-apt-repository ppa:longsleep/golang-backports
+RUN set -ex  \
  && go mod tidy \
  && go install
 
