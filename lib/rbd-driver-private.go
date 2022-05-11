@@ -1,7 +1,7 @@
 package dockerVolumeRbd
 
 import (
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/ceph/go-ceph/rbd"
 	"golang.org/x/sys/unix"
 	"path/filepath"

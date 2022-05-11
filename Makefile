@@ -1,5 +1,7 @@
 PLUGIN_NAME=wetopi/rbd
-PLUGIN_VERSION=3.0.1
+PLUGIN_VERSION=4.0.0
+
+PLUGIN_PLATFORM=linux/amd64
 
 all: clean rootfs create
 
@@ -12,8 +14,8 @@ clean:
 
 .PHONY: rootfs
 rootfs:
-	@echo "### docker build: rootfs image with docker-volume-rbd"
-	@docker build -q -t ${PLUGIN_NAME}:rootfs .
+	@echo "### docker build: rootfs ${PLUGIN_PLATFORM} image with docker-volume-rbd"
+	@docker build --platform ${PLUGIN_PLATFORM} -q -t ${PLUGIN_NAME}:rootfs .
 	@echo "### create rootfs directory in ./plugin/rootfs"
 	@mkdir -p ./plugin/rootfs
 	@docker create --name tmp ${PLUGIN_NAME}:rootfs
@@ -56,7 +58,7 @@ upgrade:
 
 .PHONY: dev
 dev:
-	@echo "### docker build: dev image with golang deps"
-	@docker build -q -t ${PLUGIN_NAME}:dev --target go-builder .
+	@echo "### docker build: dev ${PLUGIN_PLATFORM} image with golang deps"
+	@docker build --platform ${PLUGIN_PLATFORM} -q -t ${PLUGIN_NAME}:dev --target go-builder .
 	@echo "### launching interactive shell"
 	@docker run --rm -it -v ${PWD}:/go/src/github.com/wetopi/docker-volume-rbd ${PLUGIN_NAME}:dev bash

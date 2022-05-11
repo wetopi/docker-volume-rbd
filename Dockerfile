@@ -1,9 +1,9 @@
-FROM ubuntu:18.04 as base
+FROM ubuntu:20.04 as base
 
 MAINTAINER Joan Vega <joan@wetopi.com>
 
-ENV GO_VERSION 1.14
-ENV CEPH_VERSION nautilus
+ENV GO_VERSION 1.16
+ENV CEPH_VERSION pacific
 
 RUN apt-get update && apt-get install -yq software-properties-common wget \
     && wget -q -O- 'https://download.ceph.com/keys/release.asc' | apt-key add - \
@@ -28,14 +28,14 @@ ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 ENV PATH /usr/lib/go-$GO_VERSION/bin:$PATH
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
-COPY Gopkg.* main.go /go/src/github.com/wetopi/docker-volume-rbd/
+COPY go.* main.go /go/src/github.com/wetopi/docker-volume-rbd/
 COPY lib /go/src/github.com/wetopi/docker-volume-rbd/lib
 
 WORKDIR /go/src/github.com/wetopi/docker-volume-rbd
 
-RUN set -ex && go get -u github.com/golang/dep/cmd/dep \
-    && dep ensure \
-    && go install
+RUN set -ex  \
+ && go mod tidy \
+ && go install
 
 
 FROM base

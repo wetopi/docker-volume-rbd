@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/docker/go-plugins-helpers/volume"
 	"github.com/wetopi/docker-volume-rbd/lib"
 )
