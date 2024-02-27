@@ -26,6 +26,7 @@ RBD_CONF_DEVICE_MAP_ROOT="/dev/rbd"
 RBD_CONF_POOL="ssd"
 RBD_CONF_CLUSTER=ceph
 RBD_CONF_KEYRING_USER=client.admin
+RBD_CONF_NAMESPACE=""
 
 Mount options defaults to "--options=noatime" (extended syntax with no spaces)
 MOUNT_OPTIONS="--options=noatime"
@@ -127,8 +128,14 @@ docker plugin enable wetopi/rbd
 
 ## Known problems:
 
-1. **WHEN** docker plugin remove  + install **THEN** containers running in plugins node lost their volumes
+1. **WHEN** docker plugin remove + install **THEN** containers running in plugins node lost their volumes
   **SOLUTION** restart node (swarm moves containers to another node + restart free up the Rbd mapped + mounted images)
+
+2. **WHEN** using a client scoped to an rbd namespace, you are **THEN** unable to create volumes
+  **SOLUTION** alter the cap of the client to allow it to read the rbd_info object in the pool default namespace
+  ```bash
+ceph auth caps client.docker-rbd mon 'allow profile rbd' osd 'allow r pool rbd object_prefix rbd_info, profile rbd  pool=rbd  namespace=testns'
+```
 
 
 ## Troubleshooting
