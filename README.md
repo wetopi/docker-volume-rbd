@@ -206,6 +206,8 @@ curl -H "Content-Type: application/json" -XPOST -d '{}' --unix-socket /var/run/d
 ### v4.1.0
 mod: Added rbd namespaces.
 mod: Moved volume defaults to config.
+mod: updated lib go-ceph to 0.26 (pacific, quincy, reef)
+mod: updated libs to minor and patch
 
 ### v4.0.0
 mod: upgrade to ceph pacific
@@ -257,13 +259,21 @@ make all
 
 ### Vendor dependencies
 
-vendor dir is maintained using go mod
-
+Vendor dir is maintained using go mod
 
 #### Update dependencies
 
+Update All dependencies to latest Minor or Patch versions:
 
-More info: https://golang.github.io/dep/docs/daily-dep.html
+```bash
+go get -u
+```
+
+#### Clean up dependencies
+
+```bash
+go mod tidy
+```
 
 ## THANKS
 

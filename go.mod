@@ -3,12 +3,13 @@ module github.com/wetopi/docker-volume-rbd
 go 1.16
 
 require (
-	github.com/Microsoft/go-winio v0.4.14 // indirect
-	github.com/ceph/go-ceph v0.15.0
+	github.com/Microsoft/go-winio v0.6.1 // indirect
+	github.com/ceph/go-ceph v0.26.0
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf // indirect
-	github.com/docker/go-connections v0.4.0 // indirect
-	github.com/docker/go-plugins-helpers v0.0.0-20200102110956-c9a8a2d92ccc
-	github.com/sirupsen/logrus v1.8.1
-	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+	github.com/docker/go-connections v0.5.0 // indirect
+	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
+	github.com/sirupsen/logrus v1.9.3
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0
+	golang.org/x/tools v0.18.0 // indirect
 )
