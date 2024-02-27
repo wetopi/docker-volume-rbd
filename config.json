@@ -11,7 +11,7 @@
       "settable": [
         "value"
       ],
-      "value": "4.0.0"
+      "value": "4.1.0"
     },
     {
       "name": "LOG_LEVEL",
@@ -58,6 +58,38 @@
         "value"
       ],
       "value": "--options=noatime"
+    },
+    {
+      "name": "VOLUME_FSTYPE",
+      "Description": "Default file system",
+      "settable": [
+        "value"
+      ],
+      "value": "ext4"
+    },
+    {
+      "name": "VOLUME_MKFS_OPTIONS",
+      "Description": "Options to pass to the mkfs command",
+      "settable": [
+        "value"
+      ],
+      "value": "-O mmp"
+    },
+    {
+      "name": "VOLUME_SIZE",
+      "Description": "Default volume size",
+      "settable": [
+        "value"
+      ],
+      "value": "512"
+    },
+    {
+      "name": "VOLUME_ORDER",
+      "Description": "Order number. RBD stripe/chunk size, e.g. 4MB (order 22)",
+      "settable": [
+        "value"
+      ],
+      "value": "22"
     }
   ],
   "interface": {

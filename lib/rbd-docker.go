@@ -5,6 +5,7 @@ import (
 	"github.com/docker/go-plugins-helpers/volume"
 	"strconv"
 	"fmt"
+	"os"
 )
 
 
@@ -15,10 +16,10 @@ func (d *rbdDriver) Create(r *volume.CreateRequest) error {
 	defer d.Unlock()
 
     var err error
-	var fstype string = "ext4"
-	var mkfsOptions string = "-O mmp"
-	var size  uint64 =  512 // 512MB
-	var order int = 22 // 4KB Objects
+	var fstype string = os.Getenv("VOLUME_FSTYPE")
+	var mkfsOptions string = os.Getenv("VOLUME_MKFS_OPTIONS")
+	var size  uint64 = os.Getenv("VOLUME_SIZE")
+	var order os.Getenv("VOLUME_ORDER")
 
 	for key, val := range r.Options {
 		switch key {

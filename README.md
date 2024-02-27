@@ -30,9 +30,16 @@ RBD_CONF_NAMESPACE=""
 
 Mount options defaults to "--options=noatime" (extended syntax with no spaces)
 MOUNT_OPTIONS="--options=noatime"
+
+VOLUME_FSTYPE="ext4"
+VOLUME_MKFS_OPTIONS="-O mmp"
+VOLUME_SIZE="512"
+VOLUME_ORDER="22"
 ```
 
 ### 2 - Install the plugin
+
+Alter the config defaults by passing the "conf_var=value" in the `plugin install`:
 
 ```bash
 docker plugin install wetopi/rbd \
@@ -58,11 +65,11 @@ echo "rbd" >> /etc/modules
 #### Available volume driver options:
 
 ```conf
-fstype: optional, defauls to ext4
-mkfsOptions: optional, defaults to '-O mmp' (Multiple Mount Protection)
-mountOptions: optional, defaults to '--options=noatime'
-size: optional, defaults to 512 (512MB)
-order: optional, defaults to 22 (4KB Objects)
+fstype: optional, defauls to conf VOLUME_FSTYPE 'ext4'
+mkfsOptions: optional, defaults to conf VOLUME_MKFS_OPTIONS value '-O mmp' (Multiple Mount Protection)
+mountOptions: optional, defaults to conf MOUNT_OPTIONS value '--options=noatime'
+size: optional, defaults to conf VOLUME_SIZE value 512 (512MB)
+order: optional, defaults to conf VOLUME_ORDER value '22' (4KB Objects)
 ```
 
 #### 3.A - Create a volume:
@@ -195,6 +202,13 @@ curl -H "Content-Type: application/json" -XPOST -d '{}' --unix-socket /var/run/d
 ```
 
 ## Changelog
+
+### v4.1.0
+mod: Added rbd namespaces.
+mod: Moved volume defaults to config.
+
+### v4.0.0
+mod: upgrade to ceph pacific
 
 ### v3.0.1
 mod: Added CAP_NET_ADMIN to capabilities to let the driver create volumes in Ubuntu 20.04.2 and new kernels.
