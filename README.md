@@ -43,6 +43,16 @@ docker plugin install wetopi/rbd \
   RBD_CONF_KEYRING_USER=client.admin
 ```
 
+
+
+Important: Ensure the rbd kernel module is loaded at boot time
+
+```bash
+echo "rbd" >> /etc/modules
+```
+
+
+
 ### 3 - Create and use a volume
 
 #### Available volume driver options:
