@@ -2,7 +2,7 @@ FROM ubuntu:20.04 as base
 
 MAINTAINER Joan Vega <joan@wetopi.com>
 
-ENV GO_VERSION 1.16
+ENV GO_VERSION 1.18
 ENV CEPH_VERSION pacific
 
 RUN apt-get update && apt-get install -yq software-properties-common wget \

@@ -42,12 +42,13 @@ VOLUME_ORDER="22"
 Alter the config defaults by passing the "conf_var=value" in the `plugin install`:
 
 ```bash
-docker plugin install wetopi/rbd \
+docker plugin install --grant-all-permissions wetopi/rbd:4.1.0 \
   --alias=wetopi/rbd \
   LOG_LEVEL=1 \
   RBD_CONF_POOL="ssd" \
   RBD_CONF_CLUSTER=ceph \
-  RBD_CONF_KEYRING_USER=client.admin
+  RBD_CONF_KEYRING_USER=client.admin \
+  VOLUME_ORDER=20
 ```
 
 
@@ -208,7 +209,7 @@ mod: Added rbd namespaces.
 mod: Moved volume defaults to config.
 mod: updated lib go-ceph to 0.26 (pacific, quincy, reef)
 mod: updated libs to minor and patch
-
+  
 ### v4.0.0
 mod: upgrade to ceph pacific
 
